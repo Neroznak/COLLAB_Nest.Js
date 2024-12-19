@@ -8,13 +8,143 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  email     String   @unique
-  password  String?
-  name      String   @default("не указано")
-  picture   String   @default("/uploads/no-user-image.png")
+
+  userName          String          @default("unnamed user")
+  email             String          @unique
+  password          String?
+  rating            Int
+  role              String // ENUM
+  profilePictureUrl String          @default("/uploads/no-user-image.png")
+  dateOfBirth       DateTime
+  language          String // ENUM
+  bio               String
+  location          String
+  phoneNumber       String
+  status            String // ENUM
+  learningGoals     String
+  isVerified        Boolean
+  subscriptionPlane String // ENUM
+  paymentHistory    String
+  readMessages      ReaderMessage[]
+
+  collabId Int
+  collab   Collab @relation(fields: [collabId], references: [id])
+
+  Message Message[]
 
   @@map("user")
+}
+
+model Course {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title           String
+  completionRate  Float
+  description     String
+  category        String // ENUM
+  author          String
+  status          String // ENUM
+  price           Int
+  duration        DateTime
+  imageUrl        String   @default("/uploads/no-course-image.png")
+  videoPreviewUrl String?
+  tags            String
+  rating          Int
+  studentsCount   Int
+  groupSize       Int
+  structure       String
+
+  lesson Lesson[]
+  collab Collab[]
+}
+
+model Collab {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name     String
+  language String
+  capital  Float
+
+  courseId Int
+  User     User[]
+  Message  Message[]
+  Course   Course    @relation(fields: [courseId], references: [id])
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content          String
+  isEdited         Boolean
+  reactions        String // ENUM
+  attachments      String
+  isPinned         Boolean
+  replyToMessageId String
+  status           String // ENUM
+  readers          ReaderMessage[]
+
+  collabId Int
+  collab   Collab @relation(fields: [collabId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model ReaderMessage {
+  id Int @id @default(autoincrement())
+
+  userId    Int
+  messageId Int
+
+  User    User    @relation(fields: [userId], references: [id])
+  Message Message @relation(fields: [messageId], references: [id])
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  description    String
+  type           String // ENUM
+  question       String
+  expectedAnswer String
+  maxScore       String
+  order          Int
+  taskOption     TaskOption[]
+}
+
+model TaskOption {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  content   String
+  isCorrect Boolean
+  order     Int
+
+  taskId Int
+  Task   Task @relation(fields: [taskId], references: [id])
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title   String
+  content String
+  order   Int
+
+  courseId Int
+  Course   Course @relation(fields: [courseId], references: [id])
 }
