@@ -1,34 +1,76 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
-import { MessageService } from './message.service';
-import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import {
+  WebSocketGateway,
+  OnGatewayInit,
+  SubscribeMessage,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WebSocketServer
+} from "@nestjs/websockets";
+import { Logger } from '@nestjs/common';
+import { Server, Socket } from 'socket.io';
+import { CreateMessageDto } from "./dto/create-message.dto";
+import { MessageService } from "./message.service";
+import { UpdateMessageDto } from "./dto/update-message.dto";
+import { IsReadMessageDto } from "./dto/isRead-message.dto";
 
-@WebSocketGateway()
-export class MessageGateway {
-  constructor(private readonly messageService: MessageService) {}
+@WebSocketGateway(5006, { // WebSocket сервер на порту 5006
+  namespace: 'messages',
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+})
 
-  @SubscribeMessage('createMessage')
-  create(@MessageBody() createMessageDto: CreateMessageDto) {
-    return this.messageService.create(createMessageDto);
+export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  private logger: Logger = new Logger('MyGateway');
+  @WebSocketServer() server: Server;
+  private connectedClients: number = 0; // счетчик подключений
+  constructor(private readonly messageService: MessageService) {} // Инъекция сервиса
+
+
+  afterInit(server: Server) {
+    this.logger.log(`WebSocket сервер запущен на порту 5006 с namespace: /messages. ${server}`);
   }
 
-  @SubscribeMessage('findAllMessage')
-  findAll() {
-    return this.messageService.findAll();
+  // Логирование подключений
+  handleConnection(client: Socket) {
+    this.connectedClients++;
+    this.logger.log(`Клиент подключён: ${client.id}. Всего подключений: ${this.connectedClients}`);
   }
 
-  @SubscribeMessage('findOneMessage')
-  findOne(@MessageBody() id: number) {
-    return this.messageService.findOne(id);
+  // Логирование отключений
+  handleDisconnect(client: Socket) {
+    this.connectedClients--;
+    this.logger.log(`Клиент отключён: ${client.id}. Всего подключений: ${this.connectedClients}`);
+  }
+
+  @SubscribeMessage('newMessage')
+  async handleMessage(client: Socket, payload: CreateMessageDto) {
+    this.logger.log(`Сообщение получено от клиента ${client.id}: ${JSON.stringify(payload)}`);
+    const createdMessage = await this.messageService.createMessage(payload);
+    this.server.emit('sendMessage', {
+      id: createdMessage.id,
+      content: createdMessage.content,
+      chatId: createdMessage.collabId,
+      userId: createdMessage.userId,
+    });
+    return `Message saved: ${createdMessage.id}`; // Возвращай ID сохраненного сообщения или другой ответ
+  }
+
+  @SubscribeMessage('markAsRead')
+  async handleMarkAsRead(client: Socket, payload: IsReadMessageDto): Promise<void> {
+    await this.messageService.markAsRead(payload.messageId);
+    client.emit('messageRead', payload.messageId);
   }
 
   @SubscribeMessage('updateMessage')
-  update(@MessageBody() updateMessageDto: UpdateMessageDto) {
-    return this.messageService.update(updateMessageDto.id, updateMessageDto);
+  async handleUpdateMessage(client: Socket, payload: UpdateMessageDto): Promise<void> {
+    await this.messageService.updateMessage(payload.messageId, payload.userId, payload.content);
+    client.emit('messageRead', payload.messageId);
   }
 
-  @SubscribeMessage('removeMessage')
-  remove(@MessageBody() id: number) {
-    return this.messageService.remove(id);
-  }
+
+
+
 }

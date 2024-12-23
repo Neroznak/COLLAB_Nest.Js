@@ -1,6 +1,13 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateMessageDto } from './create-message.dto';
+import { IsInt, IsNotEmpty, IsString } from "class-validator";
 
-export class UpdateMessageDto extends PartialType(CreateMessageDto) {
-  id: number;
+export class UpdateMessageDto {
+  @IsNotEmpty()
+  @IsString()
+  content: string; // Текст сообщения
+
+  @IsInt()
+  userId: number; //  ID пользователя
+
+  @IsInt()
+  messageId: number; //  ID чата
 }

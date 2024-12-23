@@ -5,6 +5,7 @@ import { PrismaService } from "../prisma.service";
 import { AuthDto } from "./dto/auth.dto";
 import { Response } from "express";
 import { ConfigService } from "@nestjs/config";
+import {CreateUserDto} from "../user/dto/create-user.dto";
 
 @Injectable()
 export class AuthService {
@@ -23,7 +24,7 @@ export class AuthService {
     return { user, ...tokens };
   }
 
-  async register(dto: AuthDto) {
+  async register(dto: CreateUserDto) {
     const oldUser = await this.userService.getByEmail(dto.email);
     if (oldUser) throw new BadRequestException("Пользователь уже существует");
     const user = await this.userService.create(dto);
@@ -39,7 +40,7 @@ export class AuthService {
     return { user, ...tokens };
   }
 
-  issueTokens(userId: string) {
+  issueTokens(userId: number) {
     const data = { id: userId };
     const accessToken = this.jwt.sign(data, {
       expiresIn: "1h"
@@ -80,18 +81,18 @@ export class AuthService {
   }
 
   // метод для google and yandex. any т.к. у google and yandex здесь будут разные вещи, но у них будет user
-  async validateOauthLogin(req: any) {
-    let user = await this.userService.getByEmail(req.user.email);
-    if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          email: req.user.email,
-          name: req.user.name,
-          picture: req.user.picture
-        }
-      });
-    }
-    const tokens = this.issueTokens(user.id);
-    return { user, ...tokens };
-  }
+  // async validateOauthLogin(req: any) {
+  //   let user = await this.userService.getByEmail(req.user.email);
+  //   if (!user) {
+  //     user = await this.prisma.user.create({
+  //       data: {
+  //         email: req.user.email,
+  //         userName: req.user.name,
+  //         profilePictureUrl: req.user.picture
+  //       }
+  //     });
+  //   }
+  //   const tokens = this.issueTokens(user.id);
+  //   return { user, ...tokens };
+  // }
 }

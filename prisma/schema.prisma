@@ -12,26 +12,25 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  userName          String          @default("unnamed user")
+  userName          String          @default("User")
   email             String          @unique
   password          String?
-  rating            Int
-  role              String // ENUM
+  rating            Int             @default(0)
+  role              Role
   profilePictureUrl String          @default("/uploads/no-user-image.png")
-  dateOfBirth       DateTime
-  language          String // ENUM
-  bio               String
-  location          String
-  phoneNumber       String
-  status            String // ENUM
-  learningGoals     String
-  isVerified        Boolean
-  subscriptionPlane String // ENUM
-  paymentHistory    String
+  dateOfBirth       DateTime?
+  language          String? // ENUM
+  bio               String?
+  location          String?
+  phoneNumber       String?
+  status            String? // ENUM
+  learningGoals     String?
+  isVerified        Boolean         @default(false)
+  subscription      Subscriptions   @default(UNSUBSCRIBED)
+  paymentHistory    Payment[]
   readMessages      ReaderMessage[]
 
-  collabId Int
-  collab   Collab @relation(fields: [collabId], references: [id])
+  collab CollabUser[]
 
   Message Message[]
 
@@ -44,23 +43,22 @@ model Course {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   title           String
-  completionRate  Float
-  description     String
-  category        String // ENUM
+  completionRate  Float      @default(0.0)
+  description     String     @unique
+  category        Categories
   author          String
-  status          String // ENUM
   price           Int
-  duration        DateTime
-  imageUrl        String   @default("/uploads/no-course-image.png")
+  duration        String
+  imageUrl        String     @default("/uploads/no-course-image.png")
   videoPreviewUrl String?
-  tags            String
-  rating          Int
-  studentsCount   Int
-  groupSize       Int
-  structure       String
+  rating          Int        @default(0)
+  studentsCount   Int        @default(0)
+  groupSize       Int        @default(5)
+  structure       String     @unique
+  status          String?    @default("New")
 
-  lesson Lesson[]
   collab Collab[]
+  lesson Lesson[]
 }
 
 model Collab {
@@ -68,14 +66,27 @@ model Collab {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  name     String
-  language String
-  capital  Float
+  name     String?
+  language String?
+  capital  Float   @default(0.0)
+
+  Message Message[]
+  user    CollabUser[]
 
   courseId Int
-  User     User[]
-  Message  Message[]
-  Course   Course    @relation(fields: [courseId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id])
+}
+
+model CollabUser {
+  id Int @id @default(autoincrement())
+
+  userId   Int
+  collabId Int
+
+  User   User   @relation(fields: [userId], references: [id])
+  Collab Collab @relation(fields: [collabId], references: [id])
+
+  @@unique([userId, collabId]) // Уникальный составной ключ
 }
 
 model Message {
@@ -147,4 +158,33 @@ model Lesson {
 
   courseId Int
   Course   Course @relation(fields: [courseId], references: [id])
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  cost String
+}
+
+enum Categories {
+  IT
+  DESIGN
+  MANAGEMENT
+}
+
+enum Role {
+  CREATOR
+  STUDENT
+  ADMIN
+}
+
+enum Subscriptions {
+  UNSUBSCRIBED
+  BASE
+  PREMIUM
 }

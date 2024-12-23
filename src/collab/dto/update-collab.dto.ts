@@ -1,4 +1,10 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateCollabDto } from './create-collab.dto';
+import {IsString} from "class-validator";
 
-export class UpdateCollabDto extends PartialType(CreateCollabDto) {}
+export class UpdateCollabDto  {
+    @IsString()
+    name: string;
+
+    @IsString()
+    language: string;
+
+}

@@ -1,26 +1,79 @@
-import { Injectable } from '@nestjs/common';
-import { CreateCollabDto } from './dto/create-collab.dto';
-import { UpdateCollabDto } from './dto/update-collab.dto';
+import {BadRequestException, Injectable, InternalServerErrorException} from '@nestjs/common';
+import {PrismaService} from "../prisma.service";
+import {UpdateCollabDto} from "./dto/update-collab.dto";
 
 @Injectable()
 export class CollabService {
-  create(createCollabDto: CreateCollabDto) {
-    return 'This action adds a new collab';
-  }
 
-  findAll() {
-    return `This action returns all collab`;
-  }
+    constructor(protected readonly prisma: PrismaService) {
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} collab`;
-  }
+    async findFreeCollab(courseId: number) {
+        try {
+            const collab = await this.prisma.collab.findMany({
+                where: {
+                    courseId: courseId,
+                },
+                include: {
+                    user: true, // Включаем связанных пользователей
+                },
+            });
+            return collab.find(collab => collab.user.length <= 5);
+        } catch (error) {
+            throw new BadRequestException(error.message);
+        }
+    }
 
-  update(id: number, updateCollabDto: UpdateCollabDto) {
-    return `This action updates a #${id} collab`;
-  }
 
-  remove(id: number) {
-    return `This action removes a #${id} collab`;
-  }
+    async create(courseId: number) {
+        try {
+            return this.prisma.collab.create({
+                data: {
+                    courseId: courseId,
+                }
+            });
+        } catch (error) {
+            throw new BadRequestException(error)
+        }
+    }
+
+
+    async addUserToCollab(userId: number, collabId: number) {
+        try {
+            return await this.prisma.collabUser.create({
+                data: {
+                    userId: userId,
+                    collabId: collabId,
+                }
+            });
+        } catch (error) {
+            if (error.code === 'P2002') {
+                // Обработка ошибки уникального ограничения
+                throw new BadRequestException(
+                    `User with ID ${userId} is already linked to the collab.`
+                );
+            } else {
+                // Прочие ошибки
+                throw new InternalServerErrorException(
+                    `An unexpected error occurred: ${error.message}`
+                );
+            }
+        }
+    }
+
+    async update(id: number, UpdateCollabDto: UpdateCollabDto) {
+        try {
+            return this.prisma.collab.update({
+                where: {
+                    id: id
+                },
+                data: {
+                    ...UpdateCollabDto,
+                }
+            });
+        } catch (error) {
+            throw new BadRequestException(error)
+        }
+    }
+
 }

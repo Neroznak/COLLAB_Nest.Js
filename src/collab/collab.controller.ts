@@ -1,34 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-import { CollabService } from './collab.service';
-import { CreateCollabDto } from './dto/create-collab.dto';
-import { UpdateCollabDto } from './dto/update-collab.dto';
+import {Controller, Post, Body, Patch, Param, ParseIntPipe, UsePipes, ValidationPipe} from '@nestjs/common';
+import {CollabService} from './collab.service';
+import {UpdateCollabDto} from './dto/update-collab.dto';
 
 @Controller('collab')
 export class CollabController {
-  constructor(private readonly collabService: CollabService) {}
+    constructor(private readonly collabService: CollabService) {
+    }
 
-  @Post()
-  create(@Body() createCollabDto: CreateCollabDto) {
-    return this.collabService.create(createCollabDto);
-  }
+    @Post("/course/:courseId/user/:userId")
+    @UsePipes(new ValidationPipe())
+    async create(@Param("courseId", ParseIntPipe) courseId: number,
+                 @Param("userId", ParseIntPipe) userId: number,) {
+        const check = await this.collabService.findFreeCollab(courseId);
+        if (!check) {
+            this.collabService.create(courseId);
+        }
+        const freeCollab = await this.collabService.findFreeCollab(courseId);
+        return this.collabService.addUserToCollab(userId, freeCollab.id);
+    }
 
-  @Get()
-  findAll() {
-    return this.collabService.findAll();
-  }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.collabService.findOne(+id);
-  }
+    @Patch(':id')
+    update(@Param('id', ParseIntPipe) id: number, @Body() updateCollabDto: UpdateCollabDto) {
+        return this.collabService.update(id, updateCollabDto);
+    }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCollabDto: UpdateCollabDto) {
-    return this.collabService.update(+id, updateCollabDto);
-  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.collabService.remove(+id);
-  }
 }

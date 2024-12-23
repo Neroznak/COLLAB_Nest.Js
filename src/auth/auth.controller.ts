@@ -1,18 +1,19 @@
 import {
   Body,
-  Controller, Get,
+  Controller,
   HttpCode,
   Post,
   Req,
   Res,
-  UnauthorizedException, UseGuards,
+  UnauthorizedException,
   UsePipes,
   ValidationPipe
 } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthDto } from "./dto/auth.dto";
 import { Response, Request } from "express";
-import { AuthGuard } from "@nestjs/passport";
+// import { AuthGuard } from "@nestjs/passport";
+import {CreateUserDto} from "../user/dto/create-user.dto";
 
 @Controller("auth")
 export class AuthController {
@@ -33,7 +34,7 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   @HttpCode(200)
   @Post("register")
-  async register(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
+  async register(@Body() dto: CreateUserDto, @Res({ passthrough: true }) res: Response) {
     const { refreshToken, ...response } = await this.authService.register(dto);
     this.authService.addRefreshTokenToResponse(res, refreshToken);
     return response;
@@ -64,24 +65,24 @@ export class AuthController {
   }
 
   //Авторизация через google
-  @Get("google")
-  @UseGuards(AuthGuard("google"))
-  async googleAuth(@Req() _req) {
-    return _req;
-  }
+  // @Get("google")
+  // @UseGuards(AuthGuard("google"))
+  // async googleAuth(@Req() _req) {
+  //   return _req;
+  // }
 
   //Переадресация после авторизации в google
-  @Get("google/callback")
-  @UseGuards(AuthGuard("google"))
-  async googleAuthCallback(
-    @Req() req,
-    @Res({ passthrough: true }) res: Response
-  ) {
-    const { refreshToken, ...response } =
-      await this.authService.validateOauthLogin(req);
-    this.authService.addRefreshTokenToResponse(res, refreshToken);
-    return res.redirect(`${process.env["CLIENT_URL"]}/dashboard?accessToken=${response.accessToken}`
-    );
-  }
+  // @Get("google/callback")
+  // @UseGuards(AuthGuard("google"))
+  // async googleAuthCallback(
+  //   @Req() req,
+  //   @Res({ passthrough: true }) res: Response
+  // ) {
+  //   const { refreshToken, ...response } =
+  //     await this.authService.validateOauthLogin(req);
+  //   this.authService.addRefreshTokenToResponse(res, refreshToken);
+  //   return res.redirect(`${process.env["CLIENT_URL"]}/dashboard?accessToken=${response.accessToken}`
+  //   );
+  // }
 
 }
