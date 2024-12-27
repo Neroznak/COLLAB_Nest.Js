@@ -96,11 +96,10 @@ model Message {
 
   content          String
   isEdited         Boolean
-  reactions        String // ENUM
-  attachments      String
+  reactions        String          @default("") // ENUM
+  attachments      String          @default("")
   isPinned         Boolean
-  replyToMessageId String
-  status           String // ENUM
+  replyToMessageId String          @default("")
   readers          ReaderMessage[]
 
   collabId Int

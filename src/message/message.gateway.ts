@@ -11,7 +11,6 @@ import { Server, Socket } from 'socket.io';
 import { CreateMessageDto } from "./dto/create-message.dto";
 import { MessageService } from "./message.service";
 import { UpdateMessageDto } from "./dto/update-message.dto";
-import { IsReadMessageDto } from "./dto/isRead-message.dto";
 
 @WebSocketGateway(5006, { // WebSocket сервер на порту 5006
   namespace: 'messages',
@@ -45,6 +44,9 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.logger.log(`Клиент отключён: ${client.id}. Всего подключений: ${this.connectedClients}`);
   }
 
+  // newMessage — это входящее событие, используемое для передачи данных от клиента серверу.
+  // sendMessage — это исходящее событие, используемое для передачи данных от сервера клиентам.
+
   @SubscribeMessage('newMessage')
   async handleMessage(client: Socket, payload: CreateMessageDto) {
     this.logger.log(`Сообщение получено от клиента ${client.id}: ${JSON.stringify(payload)}`);
@@ -52,17 +54,17 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('sendMessage', {
       id: createdMessage.id,
       content: createdMessage.content,
-      chatId: createdMessage.collabId,
+      collabId: createdMessage.collabId,
       userId: createdMessage.userId,
     });
     return `Message saved: ${createdMessage.id}`; // Возвращай ID сохраненного сообщения или другой ответ
   }
 
-  @SubscribeMessage('markAsRead')
-  async handleMarkAsRead(client: Socket, payload: IsReadMessageDto): Promise<void> {
-    await this.messageService.markAsRead(payload.messageId);
-    client.emit('messageRead', payload.messageId);
-  }
+  // @SubscribeMessage('markAsRead')
+  // async handleMarkAsRead(client: Socket, payload: IsReadMessageDto): Promise<void> {
+  //   await this.messageService.markAsRead(payload.messageId);
+  //   client.emit('messageRead', payload.messageId);
+  // }
 
   @SubscribeMessage('updateMessage')
   async handleUpdateMessage(client: Socket, payload: UpdateMessageDto): Promise<void> {

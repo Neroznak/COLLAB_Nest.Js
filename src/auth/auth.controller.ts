@@ -22,11 +22,13 @@ export class AuthController {
 
   //Аутентификация
   @UsePipes(new ValidationPipe())
-  @HttpCode(200)
   @Post("login")
-  async login(@Body() dto: AuthDto, @Res({ passthrough: true }) res: Response) {
+  async login(@Body() dto: AuthDto,     @Req() req,
+              @Res({ passthrough: true }) res: Response) {
     const { refreshToken, ...response } = await this.authService.login(dto);
+    req.user = response.user;
     this.authService.addRefreshTokenToResponse(res, refreshToken);
+
     return response;
   }
 

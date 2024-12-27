@@ -1,22 +1,22 @@
 import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma.service";
-// import { CreateMessageDto } from "./dto/create-message.dto";
+import { CreateMessageDto } from "./dto/create-message.dto";
 
 @Injectable()
 export class MessageService {
   constructor(private prisma: PrismaService) {}
 
-  // async createMessage(dto: CreateMessageDto) {
-  //   return this.prisma.message.create({
-  //     data: {
-  //       content: dto.content,
-  //       collabId: dto.collabId,
-  //       userId: dto.userId,
-  //     },
-  //   });
-  // }
+  async createMessage(dto: CreateMessageDto) {
+    return this.prisma.message.create({
+      data: {
+        isEdited: false,
+        isPinned: false,
+        ...dto
+      },
+    });
+  }
 
-  async getMessagesByChat(collabId: number) {
+  async getMessagesByCollab(collabId: number) {
     return this.prisma.message.findMany({
       where: { collabId },
       orderBy: { updatedAt: 'asc' },

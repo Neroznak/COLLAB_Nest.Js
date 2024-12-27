@@ -11,24 +11,22 @@ export class MessageController {
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Get(":collabId")
-  async getMessagesByChat(@Param("chatId", ParseIntPipe) chatId: number) {
-    return this.messageService.getMessagesByChat(chatId);
+  async getMessagesByChat(@Param("collabId", ParseIntPipe) collabId: number) {
+    return this.messageService.getMessagesByCollab(collabId);
   }
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Delete(":messageId")
-  async deleteMessage(@Param("messageId") id: string,
+  async deleteMessage(@Param("messageId", ParseIntPipe) messageId: number,
                       @CurrentUser("id") userId: number) {
-    const messageId = parseInt(id, 10); // Преобразуем id в число
     return this.messageService.deleteMessage(messageId, userId);
   }
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Get('search/:chatId')
-  async searchMessages(@Param("chatId") id: string,
+  async searchMessages(@Param("chatId", ParseIntPipe) chatId: number,
                        @CurrentUser("id") userId: number,
                        @Query('query') query: string) {
-    const chatId = parseInt(id, 10); // Преобразуем id в число
     return this.messageService.searchMessages(chatId, userId, query);
   }
 }

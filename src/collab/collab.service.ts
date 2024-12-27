@@ -76,4 +76,18 @@ export class CollabService {
         }
     }
 
+    async getCollabers(collabId: number) {
+        const users = await this.prisma.user.findMany({
+            where: {
+                collab: {
+                    some: {
+                        collabId: collabId,
+                    }
+                }
+            }
+        })
+        console.log(users);
+        return users;
+    }
+
 }
