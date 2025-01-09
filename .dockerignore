@@ -1,0 +1,11 @@
+# Исключает файлы и папки из собираемого образа Docker
+node_modules
+.env
+dist
+.gitignore
+.md
+.git
+Dockerfile
+.dockerignore
+npm-debug.log
+docker-compose.yml

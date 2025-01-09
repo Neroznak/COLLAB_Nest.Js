@@ -179,6 +179,7 @@ enum Categories {
 enum Role {
   CREATOR
   STUDENT
+  MENTOR
   ADMIN
 }
 
