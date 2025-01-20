@@ -12,23 +12,12 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  userName          String          @default("User")
-  email             String          @unique
+  userName          String  @default("User")
+  email             String  @unique
   password          String?
-  rating            Int             @default(0)
   role              Role
-  profilePictureUrl String          @default("/uploads/no-user-image.png")
-  dateOfBirth       DateTime?
+  profilePictureUrl String  @default("/uploads/no-user-image.png")
   language          String? // ENUM
-  bio               String?
-  location          String?
-  phoneNumber       String?
-  status            String? // ENUM
-  learningGoals     String?
-  isVerified        Boolean         @default(false)
-  subscription      Subscriptions   @default(UNSUBSCRIBED)
-  paymentHistory    Payment[]
-  readMessages      ReaderMessage[]
 
   collab CollabUser[]
 
@@ -37,44 +26,19 @@ model User {
   @@map("user")
 }
 
-model Course {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  title           String
-  completionRate  Float      @default(0.0)
-  description     String     @unique
-  category        Categories
-  author          String
-  price           Int
-  duration        String
-  imageUrl        String     @default("/uploads/no-course-image.png")
-  videoPreviewUrl String?
-  rating          Int        @default(0)
-  studentsCount   Int        @default(0)
-  groupSize       Int        @default(5)
-  structure       String     @unique
-  status          String?    @default("New")
-
-  collab Collab[]
-  lesson Lesson[]
-}
-
 model Collab {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now()) @map("created_at")
+  passedAt  DateTime? @map("updated_at")
 
   name     String?
   language String?
-  capital  Float   @default(0.0)
 
   Message Message[]
   user    CollabUser[]
 
-  courseId Int
-  course   Course @relation(fields: [courseId], references: [id])
+  taskId Int
+  task   Task @relation(fields: [taskId], references: [id])
 }
 
 model CollabUser {
@@ -95,12 +59,8 @@ model Message {
   updatedAt DateTime @updatedAt
 
   content          String
-  isEdited         Boolean
-  reactions        String          @default("") // ENUM
-  attachments      String          @default("")
-  isPinned         Boolean
-  replyToMessageId String          @default("")
-  readers          ReaderMessage[]
+  attachments      String @default("")
+  replyToMessageId String @default("")
 
   collabId Int
   collab   Collab @relation(fields: [collabId], references: [id])
@@ -109,65 +69,48 @@ model Message {
   user   User @relation(fields: [userId], references: [id])
 }
 
-model ReaderMessage {
-  id Int @id @default(autoincrement())
-
-  userId    Int
-  messageId Int
-
-  User    User    @relation(fields: [userId], references: [id])
-  Message Message @relation(fields: [messageId], references: [id])
-}
-
 model Task {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  description    String
-  type           String // ENUM
-  question       String
-  expectedAnswer String
-  maxScore       String
-  order          Int
-  taskOption     TaskOption[]
+  topic      String
+  category   Categories
+  Collab     Collab[]
+  TaskTheory TaskTheory[]
 }
 
-model TaskOption {
+model Theory {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  content   String
-  isCorrect Boolean
-  order     Int
-
-  taskId Int
-  Task   Task @relation(fields: [taskId], references: [id])
+  title      String
+  category   Categories
+  content    String
+  TaskTheory TaskTheory[]
 }
 
-model Lesson {
+model TaskTheory {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  title   String
-  content String
-  order   Int
+  taskId   Int
+  theoryId Int
 
-  courseId Int
-  Course   Course @relation(fields: [courseId], references: [id])
+  Task   Task   @relation(fields: [taskId], references: [id])
+  Theory Theory @relation(fields: [theoryId], references: [id])
+
+  @@unique([taskId, theoryId]) // Уникальный составной ключ
 }
 
-model Payment {
+model Quotes {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  userId Int
-  user   User @relation(fields: [userId], references: [id])
-
-  cost String
+  quote String
 }
 
 enum Categories {
@@ -177,9 +120,7 @@ enum Categories {
 }
 
 enum Role {
-  CREATOR
   STUDENT
-  MENTOR
   ADMIN
 }
 

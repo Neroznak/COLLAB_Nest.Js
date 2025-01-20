@@ -1,0 +1,201 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userName          String          @default("User")
+  email             String          @unique
+  password          String?
+  rating            Int             @default(0)
+  role              Role
+  profilePictureUrl String          @default("/uploads/no-user-image.png")
+  dateOfBirth       DateTime?
+  language          String? // ENUM
+  bio               String?
+  location          String?
+  phoneNumber       String?
+  status            String? // ENUM
+  learningGoals     String?
+  isVerified        Boolean         @default(false)
+  subscription      Subscriptions   @default(UNSUBSCRIBED)
+  paymentHistory    Payment[]
+  readMessages      ReaderMessage[]
+
+  collab CollabUser[]
+
+  Message Message[]
+  Quotes  Quotes[]
+
+  @@map("user")
+}
+
+model Course {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title           String
+  completionRate  Float      @default(0.0)
+  description     String     @unique
+  category        Categories
+  author          String
+  price           Int
+  duration        String
+  imageUrl        String     @default("/uploads/no-course-image.png")
+  videoPreviewUrl String?
+  rating          Int        @default(0)
+  studentsCount   Int        @default(0)
+  groupSize       Int        @default(5)
+  structure       String     @unique
+  status          String?    @default("New")
+
+  collab Collab[]
+  lesson Lesson[]
+}
+
+model Collab {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name     String?
+  language String?
+  capital  Float   @default(0.0)
+
+  Message Message[]
+  user    CollabUser[]
+
+  courseId Int
+  course   Course @relation(fields: [courseId], references: [id])
+}
+
+model CollabUser {
+  id Int @id @default(autoincrement())
+
+  userId   Int
+  collabId Int
+
+  User   User   @relation(fields: [userId], references: [id])
+  Collab Collab @relation(fields: [collabId], references: [id])
+
+  @@unique([userId, collabId]) // Уникальный составной ключ
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  content          String
+  isEdited         Boolean
+  reactions        String          @default("") // ENUM
+  attachments      String          @default("")
+  isPinned         Boolean
+  replyToMessageId String          @default("")
+  readers          ReaderMessage[]
+
+  collabId Int
+  collab   Collab @relation(fields: [collabId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model ReaderMessage {
+  id Int @id @default(autoincrement())
+
+  userId    Int
+  messageId Int
+
+  User    User    @relation(fields: [userId], references: [id])
+  Message Message @relation(fields: [messageId], references: [id])
+}
+
+model Task {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  description    String
+  type           String // ENUM, должна быть категория и тема задания и теория к заданию и степень его сложности. Типа TypeScript. Циклы for и while. Задание: ... , ответ: ... 
+  question       String
+  expectedAnswer String
+  maxScore       String
+  order          Int
+  taskOption     TaskOption[]
+}
+
+model TaskOption {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  content   String
+  isCorrect Boolean
+  order     Int
+
+  taskId Int
+  Task   Task @relation(fields: [taskId], references: [id])
+}
+
+model Lesson {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  title   String
+  content String
+  order   Int
+
+  courseId Int
+  Course   Course @relation(fields: [courseId], references: [id])
+}
+
+model Payment {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  cost String
+}
+
+model Quotes {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  quote  String
+  User   User?  @relation(fields: [userId], references: [id])
+  userId Int?
+}
+
+enum Categories {
+  IT
+  DESIGN
+  MANAGEMENT
+}
+
+enum Role {
+  CREATOR
+  STUDENT
+  MENTOR
+  ADMIN
+}
+
+enum Subscriptions {
+  UNSUBSCRIBED
+  BASE
+  PREMIUM
+}
