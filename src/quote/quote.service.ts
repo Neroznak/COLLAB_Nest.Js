@@ -21,7 +21,7 @@ export class QuoteService {
   async findRandom() {
     return await this.prisma.$queryRaw`
             SELECT * 
-            FROM "quotes"
+            FROM "Quotes"
             ORDER BY RANDOM()
             LIMIT 1
 `;
