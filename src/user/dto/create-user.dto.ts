@@ -1,6 +1,5 @@
-import {IsEmail, IsEnum, IsNotEmpty, IsString, IsStrongPassword} from "class-validator";
+import {IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, IsStrongPassword} from "class-validator";
 import {Role} from "../../enums/roles.enum";
-import {Optional} from "@nestjs/common";
 
 export class CreateUserDto {
 
@@ -17,16 +16,16 @@ export class CreateUserDto {
     @IsStrongPassword()
     password: string;
 
-    @IsNotEmpty()
     @IsEnum(Role)
+    @IsOptional()
     role:Role
 
     @IsString()
-    @Optional()
+    @IsOptional()
     profilePictureUrl: string;
 
     @IsString()
-    @Optional()
+    @IsOptional()
     language: string;
 
 
