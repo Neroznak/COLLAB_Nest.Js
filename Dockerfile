@@ -14,10 +14,10 @@ COPY . .
 RUN npx prisma generate
 
 # Сборка приложения
-RUN pnpm build
+RUN pnpm run build
 
 # Открываем порт
-EXPOSE 5000
+EXPOSE 443
 
 # Указываем команду для запуска
 CMD [ "pnpm", "run", "start:migrate:prod" ]
