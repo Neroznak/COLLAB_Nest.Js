@@ -1,8 +1,8 @@
 import {IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString} from "class-validator";
 import {Categories} from "../../enums/categories.enum";
-import {Difficulty} from "../../enums/difficulty.enum";
 
-export class CreateTaskDto {
+export class CreateTheoryDto {
+
     @IsString()
     @IsNotEmpty()
     title:string
@@ -19,11 +19,6 @@ export class CreateTaskDto {
     @IsBoolean()
     @IsOptional()
     isDeleted:boolean
-
-    @IsEnum(Difficulty)
-    @IsNotEmpty()
-    difficulty: Difficulty
-
 
 
 

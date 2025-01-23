@@ -1,6 +1,8 @@
 import {BadRequestException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import {PrismaService} from "../prisma.service";
 import {UpdateCollabDto} from "./dto/update-collab.dto";
+import {Categories} from "../enums/categories.enum";
+import {Difficulty} from "../enums/difficulty.enum";
 
 @Injectable()
 export class CollabService {
@@ -8,15 +10,20 @@ export class CollabService {
     constructor(protected readonly prisma: PrismaService) {
     }
 
-    async findFreeCollab(courseId: number) {
+    async findFreeCollab(difficulty: Difficulty, category: Categories, title: string) {
         try {
             const collab = await this.prisma.collab.findMany({
                 where: {
-                    courseId: courseId,
+                    task: {
+                        category: category,
+                        title: title,
+                        difficulty: difficulty
+                    },
+                    isPassed: false,
                 },
                 include: {
-                    user: true, // Включаем связанных пользователей
-                },
+                    user: true
+                }
             });
             return collab.find(collab => collab.user.length <= 5);
         } catch (error) {
@@ -24,18 +31,20 @@ export class CollabService {
         }
     }
 
-
-    async create(courseId: number) {
+    async create(taskId: number, userId: number) {
         try {
-            return this.prisma.collab.create({
+            const collab =  await this.prisma.collab.create({
                 data: {
-                    courseId: courseId,
+                    taskId: taskId,
                 }
             });
+            this.addUserToCollab(collab.id, userId);
+            return collab;
         } catch (error) {
             throw new BadRequestException(error)
         }
     }
+
 
 
     async addUserToCollab(userId: number, collabId: number) {

@@ -11,15 +11,16 @@ export class MessageController {
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Get(":collabId")
-  async getMessagesByChat(@Param("collabId", ParseIntPipe) collabId: number) {
-    return this.messageService.getMessagesByCollab(collabId);
+  async getMessagesByChat(@Param("collabId") collabId: string) {
+    return this.messageService.getMessagesByCollab(+collabId);
   }
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Delete(":messageId")
   async deleteMessage(@Param("messageId", ParseIntPipe) messageId: number,
-                      @CurrentUser("id") userId: number) {
-    return this.messageService.deleteMessage(messageId, userId);
+                      @CurrentUser("id") userId: number,
+                      @Query ('forAnyOne') forAnyOne: boolean,) {
+    return this.messageService.deleteMessage(messageId, userId, forAnyOne);
   }
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма

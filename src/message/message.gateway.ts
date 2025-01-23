@@ -10,7 +10,7 @@ import { Logger } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { CreateMessageDto } from "./dto/create-message.dto";
 import { MessageService } from "./message.service";
-import { UpdateMessageDto } from "./dto/update-message.dto";
+import {IsReadMessageDto} from "./dto/isRead-message.dto";
 
 @WebSocketGateway(5006, { // WebSocket сервер на порту 5006
   namespace: 'messages',
@@ -60,17 +60,17 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     return `Message saved: ${createdMessage.id}`; // Возвращай ID сохраненного сообщения или другой ответ
   }
 
-  // @SubscribeMessage('markAsRead')
-  // async handleMarkAsRead(client: Socket, payload: IsReadMessageDto): Promise<void> {
-  //   await this.messageService.markAsRead(payload.messageId);
-  //   client.emit('messageRead', payload.messageId);
-  // }
-
-  @SubscribeMessage('updateMessage')
-  async handleUpdateMessage(client: Socket, payload: UpdateMessageDto): Promise<void> {
-    await this.messageService.updateMessage(payload.messageId, payload.userId, payload.content);
+  @SubscribeMessage('markAsRead')
+  async handleMarkAsRead(client: Socket, payload: IsReadMessageDto): Promise<void> {
+    await this.messageService.markAsRead(payload.messageId);
     client.emit('messageRead', payload.messageId);
   }
+
+  // @SubscribeMessage('updateMessage')
+  // async handleUpdateMessage(client: Socket, payload: UpdateMessageDto): Promise<void> {
+  //   await this.messageService.updateMessage(payload.messageId, payload.userId, payload.content);
+  //   client.emit('messageRead', payload.messageId);
+  // }
 
 
 

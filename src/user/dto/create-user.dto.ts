@@ -1,6 +1,6 @@
 import {IsEmail, IsEnum, IsNotEmpty, IsString, IsStrongPassword} from "class-validator";
 import {Role} from "../../enums/roles.enum";
-import {subscriptionPlane} from "../../enums/subscription.enum";
+import {Optional} from "@nestjs/common";
 
 export class CreateUserDto {
 
@@ -20,6 +20,14 @@ export class CreateUserDto {
     @IsNotEmpty()
     @IsEnum(Role)
     role:Role
+
+    @IsString()
+    @Optional()
+    profilePictureUrl: string;
+
+    @IsString()
+    @Optional()
+    language: string;
 
 
 
