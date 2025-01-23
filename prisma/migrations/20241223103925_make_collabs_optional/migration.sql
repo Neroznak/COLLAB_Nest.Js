@@ -1,4 +1,0 @@
--- AlterTable
-ALTER TABLE "Collab" ALTER COLUMN "name" DROP NOT NULL,
-ALTER COLUMN "language" DROP NOT NULL,
-ALTER COLUMN "capital" SET DEFAULT 0.0;
