@@ -23,6 +23,18 @@ export class CreateTaskDto {
     @IsNotEmpty()
     difficulty: string
 
+    @IsString()
+    @IsNotEmpty()
+    answer: string
+
+    @IsString()
+    @IsNotEmpty()
+    author: string
+
+    @IsString()
+    @IsNotEmpty()
+    name: string
+
 
 
 
