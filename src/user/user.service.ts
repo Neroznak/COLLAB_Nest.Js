@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma.service';
 import { hash } from 'argon2';
 import {CreateUserDto} from "./dto/create-user.dto";
 import {UpdateUserDto} from "./dto/update-user.dto";
+import {CreateUserMvpDto} from "./dto/create-user-mvp.dto";
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
@@ -28,6 +29,14 @@ export class UserService {
       data: {
         ...dto,
         password: await hash(dto.password),
+      }
+    });
+  }
+
+  async createMvp(dto: CreateUserMvpDto) {
+    return this.prisma.user.create({
+      data: {
+        ...dto,
       }
     });
   }

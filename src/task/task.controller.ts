@@ -1,19 +1,21 @@
-import {Controller, Get, Post, Body, Patch, Param, Delete, Query} from '@nestjs/common';
+import {Controller, Post, Body, Patch, Param, Delete, Get} from '@nestjs/common';
 import { TaskService } from './task.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
-import {Difficulty} from "../enums/difficulty.enum";
-import {Categories} from "../enums/categories.enum";
 
 @Controller('task')
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
-  @Post()
+  @Post("create")
   create(@Body() createTaskDto: CreateTaskDto) {
     return this.taskService.create(createTaskDto);
   }
 
+  @Get(":id")
+  getTask(@Param('id') taskId: string) {
+    return this.taskService.getTask(+taskId);
+  }
 
 
   // @Get('')

@@ -14,10 +14,10 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   userName          String  @default("User")
-  email             String  @unique
+  email             String? @unique
   password          String?
   role              Role    @default(STUDENT)
-  profilePictureUrl String  @default("/uploads/no-user-image.png")
+  profilePictureUrl String  @default("https://github.com/shadcn.png")
   language          String? // ENUM
 
   collab CollabUser[]
@@ -91,10 +91,13 @@ model Task {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   title      String
-  category   Categories
+  category   String
   content    String
-  isDeleted  Boolean    @default(false)
-  difficulty Difficulty
+  isDeleted  Boolean @default(false)
+  difficulty String
+  answer     String  @default("")
+  author     String  @default("")
+  name       String  @default("")
 
   Collab     Collab[]
   TaskTheory TaskTheory[]
@@ -138,6 +141,7 @@ model Quotes {
 
 enum Categories {
   IT
+  TYPESCRIPT
   DESIGN
   MANAGEMENT
 }

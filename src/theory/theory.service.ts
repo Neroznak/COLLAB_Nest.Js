@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import {CreateTheoryDto} from './dto/create-theory.dto';
 import {UpdateTheoryDto} from './dto/update-theory.dto';
 import {PrismaService} from "../prisma.service";
-import {Categories} from "../enums/categories.enum";
+import {Categories} from "@prisma/client";
 
 @Injectable()
 export class TheoryService {

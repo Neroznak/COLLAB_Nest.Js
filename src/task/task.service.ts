@@ -1,10 +1,8 @@
-import {Injectable} from '@nestjs/common';
+import {BadRequestException, Injectable} from '@nestjs/common';
 import {CreateTaskDto} from './dto/create-task.dto';
 import {UpdateTaskDto} from './dto/update-task.dto';
 import {PrismaService} from "../prisma.service";
-import {Difficulty} from "../enums/difficulty.enum";
-import {Categories} from "../enums/categories.enum";
-import {Task} from "../entities/task.entity";
+
 
 @Injectable()
 export class TaskService {
@@ -21,15 +19,24 @@ export class TaskService {
     }
 
 
-
-    async findForCollab(difficulty: Difficulty, category: Categories, title: string): Promise<Task> {
-        return await this.prisma.$queryRaw`
-            SELECT * 
-            FROM "Task"
-            WHERE "difficulty" = ${difficulty} AND "category" = ${category} AND "title" = ${title}
-            ORDER BY RANDOM()
-            LIMIT 1
-`;
+    async findForCollab(difficulty: string, category: string, title: string) {
+        console.log("В findForCollab приходит difficulty: " + difficulty);
+        console.log("В findForCollab приходит category: " + category);
+        console.log("В findForCollab приходит title: " + title);
+        try {
+             const tasks=  await this.prisma.task.findMany({
+                where: {
+                    difficulty: difficulty,
+                    category: category,
+                    title: title
+                }
+            })
+            const randomIndex = Math.floor(Math.random() * tasks.length);
+             console.log(tasks[randomIndex]);
+            return tasks[randomIndex]
+        } catch (error) {
+            throw new BadRequestException(error.message())
+        }
     }
 
     update(taskId: number, updateTaskDto: UpdateTaskDto) {
@@ -51,6 +58,23 @@ export class TaskService {
             data: {
                 isDeleted: true,
             }
+        })
+    }
+
+
+    getTask(taskId: number) {
+        return this.prisma.task.findUnique({
+            where: {
+                id: taskId,
+            },
+            include: {
+                TaskTheory:{
+                    include: {
+                        Theory: true
+                    }
+                }
+            }
+
         })
     }
 }

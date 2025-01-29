@@ -9,12 +9,11 @@ export class MessageController {
   constructor(private readonly messageService: MessageService) {
   }
 
-  @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Get(":collabId")
-  async getMessagesByChat(@Param("collabId") collabId: string) {
+  async getMessagesByCollab(@Param("collabId") collabId: string) {
     return this.messageService.getMessagesByCollab(+collabId);
   }
-
+  
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Delete(":messageId")
   async deleteMessage(@Param("messageId", ParseIntPipe) messageId: number,

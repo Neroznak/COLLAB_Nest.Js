@@ -1,5 +1,5 @@
 import {IsBoolean, IsEnum, IsNotEmpty, IsOptional, IsString} from "class-validator";
-import {Categories} from "../../enums/categories.enum";
+import {Categories} from "@prisma/client";
 
 export class CreateTheoryDto {
 

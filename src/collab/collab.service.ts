@@ -1,8 +1,7 @@
 import {BadRequestException, Injectable, InternalServerErrorException} from '@nestjs/common';
 import {PrismaService} from "../prisma.service";
 import {UpdateCollabDto} from "./dto/update-collab.dto";
-import {Categories} from "../enums/categories.enum";
-import {Difficulty} from "../enums/difficulty.enum";
+
 
 @Injectable()
 export class CollabService {
@@ -10,7 +9,7 @@ export class CollabService {
     constructor(protected readonly prisma: PrismaService) {
     }
 
-    async findFreeCollab(difficulty: Difficulty, category: Categories, title: string) {
+    async findFreeCollab(difficulty: string, category: string, title: string) {
         try {
             const collab = await this.prisma.collab.findMany({
                 where: {
@@ -45,8 +44,6 @@ export class CollabService {
         }
     }
 
-
-
     async addUserToCollab(userId: number, collabId: number) {
         try {
             return await this.prisma.collabUser.create({
@@ -70,11 +67,11 @@ export class CollabService {
         }
     }
 
-    async update(id: number, UpdateCollabDto: UpdateCollabDto) {
+    async update(collabId: number, UpdateCollabDto: UpdateCollabDto) {
         try {
             return this.prisma.collab.update({
                 where: {
-                    id: id
+                    id: collabId
                 },
                 data: {
                     ...UpdateCollabDto,
@@ -85,18 +82,34 @@ export class CollabService {
         }
     }
 
-    async getCollabers(collabId: number) {
-        const users = await this.prisma.user.findMany({
+    async getCollab(collabId: number) {
+        const collab = await this.prisma.collab.findUnique({
             where: {
-                collab: {
-                    some: {
-                        collabId: collabId,
+                id: collabId
+            },
+            include: {
+                task: true,
+                Message: true,
+                user: {
+                    include: {
+                        User: true, // Подгружаем данные пользователя через CollabUser
                     }
-                }
+                },
             }
         })
-        console.log(users);
-        return users;
+        return collab;
     }
 
+    // async getCollabUsers
+    // const collabWithUsers = await prisma.collab.findUnique({
+    //     where: { id: 1 },
+    //     include: {
+    //         collabUsers: {
+    //             include: {
+    //                 user: true,
+    //             },
+    //         },
+    //     },
+    // });
+    // console.log(collabWithUsers);
 }

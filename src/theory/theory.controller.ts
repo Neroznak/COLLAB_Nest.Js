@@ -2,7 +2,7 @@ import {Controller, Get, Post, Body, Patch, Param, Delete, Query} from '@nestjs/
 import { TheoryService } from './theory.service';
 import { CreateTheoryDto } from './dto/create-theory.dto';
 import { UpdateTheoryDto } from './dto/update-theory.dto';
-import {Categories} from "../enums/categories.enum";
+import {Categories} from "@prisma/client";
 
 @Controller('theory')
 export class TheoryController {
