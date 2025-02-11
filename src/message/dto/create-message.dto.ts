@@ -10,4 +10,5 @@ export class CreateMessageDto {
 
   @IsInt()
   collabId: number; //  ID чата
+
 }

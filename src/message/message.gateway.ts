@@ -34,10 +34,10 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   // Логирование подключений
   handleConnection(client: Socket) {
+    const clientIp = client.handshake.address;
     this.connectedClients++;
-    this.logger.log(`Клиент подключён: ${client.id}. Всего подключений: ${this.connectedClients}`);
+    this.logger.log(`Клиент подключён: ${client.id} (IP: ${clientIp}). Всего подключений: ${this.connectedClients}`);
   }
-
   // Логирование отключений
   handleDisconnect(client: Socket) {
     this.connectedClients--;
@@ -56,6 +56,7 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       content: createdMessage.content,
       collabId: createdMessage.collabId,
       userId: createdMessage.userId,
+      user: createdMessage.user
     });
     return `Message saved: ${createdMessage.id}`; // Возвращай ID сохраненного сообщения или другой ответ
   }

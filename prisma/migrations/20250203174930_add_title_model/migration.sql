@@ -1,14 +1,11 @@
 -- CreateEnum
-CREATE TYPE "Categories" AS ENUM ('IT', 'DESIGN', 'MANAGEMENT');
+CREATE TYPE "Categories" AS ENUM ('TYPESCRIPT');
 
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('STUDENT', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "Subscriptions" AS ENUM ('UNSUBSCRIBED', 'BASE', 'PREMIUM');
-
--- CreateEnum
-CREATE TYPE "Difficulty" AS ENUM ('JUNIOR', 'MIDDLE', 'SENIOR');
+CREATE TYPE "Difficulty" AS ENUM ('JUNIOR');
 
 -- CreateTable
 CREATE TABLE "user" (
@@ -16,10 +13,10 @@ CREATE TABLE "user" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "userName" TEXT NOT NULL DEFAULT 'User',
-    "email" TEXT NOT NULL,
+    "email" TEXT,
     "password" TEXT,
     "role" "Role" NOT NULL DEFAULT 'STUDENT',
-    "profilePictureUrl" TEXT NOT NULL DEFAULT '/uploads/no-user-image.png',
+    "profilePictureUrl" TEXT NOT NULL DEFAULT 'https://github.com/shadcn.png',
     "language" TEXT,
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
@@ -76,11 +73,14 @@ CREATE TABLE "Task" (
     "id" SERIAL NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-    "title" TEXT NOT NULL,
+    "titleId" INTEGER NOT NULL,
     "category" "Categories" NOT NULL,
     "content" TEXT NOT NULL,
     "isDeleted" BOOLEAN NOT NULL DEFAULT false,
     "difficulty" "Difficulty" NOT NULL,
+    "answer" JSONB,
+    "author" TEXT NOT NULL DEFAULT '',
+    "name" TEXT NOT NULL DEFAULT '',
 
     CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
 );
@@ -120,6 +120,30 @@ CREATE TABLE "Quotes" (
     CONSTRAINT "Quotes_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Attempt" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "userAnswer" TEXT NOT NULL,
+    "collabId" INTEGER NOT NULL,
+    "userId" INTEGER NOT NULL,
+
+    CONSTRAINT "Attempt_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Title" (
+    "id" SERIAL NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "category" "Categories" NOT NULL,
+    "difficulty" "Difficulty" NOT NULL,
+    "title" TEXT NOT NULL,
+
+    CONSTRAINT "Title_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
 
@@ -154,7 +178,16 @@ ALTER TABLE "HiddenMessage" ADD CONSTRAINT "HiddenMessage_userId_fkey" FOREIGN K
 ALTER TABLE "HiddenMessage" ADD CONSTRAINT "HiddenMessage_messageId_fkey" FOREIGN KEY ("messageId") REFERENCES "Message"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Task" ADD CONSTRAINT "Task_titleId_fkey" FOREIGN KEY ("titleId") REFERENCES "Title"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "TaskTheory" ADD CONSTRAINT "TaskTheory_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TaskTheory" ADD CONSTRAINT "TaskTheory_theoryId_fkey" FOREIGN KEY ("theoryId") REFERENCES "Theory"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Attempt" ADD CONSTRAINT "Attempt_collabId_fkey" FOREIGN KEY ("collabId") REFERENCES "Collab"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Attempt" ADD CONSTRAINT "Attempt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

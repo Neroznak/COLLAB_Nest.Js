@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider          = "postgresql"
   url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+  shadowDatabaseUrl = "" // Отключает shadow database
 }
 
 model User {
@@ -24,6 +24,7 @@ model User {
 
   Message       Message[]
   HiddenMessage HiddenMessage[]
+  Attempt       Attempt[]
 
   @@map("user")
 }
@@ -36,12 +37,14 @@ model Collab {
   name     String?
   language String?
   isPassed Boolean @default(false)
+  hash     String  @unique @default("")
 
   Message Message[]
   user    CollabUser[]
 
-  taskId Int
-  task   Task @relation(fields: [taskId], references: [id])
+  taskId  Int
+  task    Task      @relation(fields: [taskId], references: [id])
+  Attempt Attempt[]
 }
 
 model CollabUser {
@@ -90,14 +93,15 @@ model Task {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  title      String
-  category   String
-  content    String
-  isDeleted  Boolean @default(false)
-  difficulty String
-  answer     String  @default("")
-  author     String  @default("")
-  name       String  @default("")
+  category     Categories
+  difficulty   Difficulty
+  title        String
+  content      String
+  isDeleted    Boolean    @default(false)
+  testCases    Json?
+  initial_data String     @default("")
+  author       String     @default("")
+  name         String     @default("")
 
   Collab     Collab[]
   TaskTheory TaskTheory[]
@@ -108,8 +112,8 @@ model Theory {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  title     String
   category  Categories
+  title     String
   content   String
   isDeleted Boolean    @default(false)
 
@@ -139,11 +143,24 @@ model Quotes {
   author String
 }
 
+model Attempt {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userAnswer String
+  isPassed   Boolean @default(false)
+  output     Json?
+
+  collabId Int
+  collab   Collab @relation(fields: [collabId], references: [id])
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
 enum Categories {
-  IT
   TYPESCRIPT
-  DESIGN
-  MANAGEMENT
 }
 
 enum Role {
@@ -151,14 +168,6 @@ enum Role {
   ADMIN
 }
 
-enum Subscriptions {
-  UNSUBSCRIBED
-  BASE
-  PREMIUM
-}
-
 enum Difficulty {
   JUNIOR
-  MIDDLE
-  SENIOR
 }

@@ -1,4 +1,4 @@
 import { CreateTaskDto } from './create-task.dto';
 import {PickType} from "@nestjs/mapped-types";
 
-export class FindTaskDto extends PickType(CreateTaskDto, ['difficulty','title','category']) {}
+export class GetTaskDto extends PickType(CreateTaskDto, ['category','difficulty','title']) {}

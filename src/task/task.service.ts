@@ -2,6 +2,7 @@ import {BadRequestException, Injectable} from '@nestjs/common';
 import {CreateTaskDto} from './dto/create-task.dto';
 import {UpdateTaskDto} from './dto/update-task.dto';
 import {PrismaService} from "../prisma.service";
+import {GetTaskDto} from "./dto/get-task.dto";
 
 
 @Injectable()
@@ -11,28 +12,25 @@ export class TaskService {
 
 
     async create(createTaskDto: CreateTaskDto) {
+        const testCasesJson = JSON.stringify(createTaskDto.testCases);
+
         return this.prisma.task.create({
             data: {
                 ...createTaskDto,
+                testCases: testCasesJson
             }
         })
     }
 
 
-    async findForCollab(difficulty: string, category: string, title: string) {
-        console.log("В findForCollab приходит difficulty: " + difficulty);
-        console.log("В findForCollab приходит category: " + category);
-        console.log("В findForCollab приходит title: " + title);
+    async getTaskForCollab(getTaskDto: GetTaskDto) {
         try {
              const tasks=  await this.prisma.task.findMany({
                 where: {
-                    difficulty: difficulty,
-                    category: category,
-                    title: title
+                    ...getTaskDto
                 }
             })
             const randomIndex = Math.floor(Math.random() * tasks.length);
-             console.log(tasks[randomIndex]);
             return tasks[randomIndex]
         } catch (error) {
             throw new BadRequestException(error.message())
@@ -40,12 +38,14 @@ export class TaskService {
     }
 
     update(taskId: number, updateTaskDto: UpdateTaskDto) {
+        const testCasesJson = JSON.stringify(updateTaskDto.testCases);
         return this.prisma.task.update({
             where: {
                 id: taskId,
             },
             data: {
                 ...updateTaskDto,
+                testCases: testCasesJson
             }
         })
     }

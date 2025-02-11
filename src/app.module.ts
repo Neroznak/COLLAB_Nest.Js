@@ -7,7 +7,8 @@ import { MessageModule } from './message/message.module';
 import { TaskModule } from './task/task.module';
 import { QuoteModule } from './quote/quote.module';
 import { TheoryModule } from './theory/theory.module';
+import {AttemptModule} from "./attempt/attempt.module";
 @Module({
-  imports: [ConfigModule.forRoot(), AuthModule, UserModule, CollabModule, MessageModule, TaskModule, TheoryModule, QuoteModule]
+  imports: [ConfigModule.forRoot(), AuthModule, UserModule, CollabModule, MessageModule, TaskModule, TheoryModule, QuoteModule, AttemptModule]
 })
 export class AppModule {}

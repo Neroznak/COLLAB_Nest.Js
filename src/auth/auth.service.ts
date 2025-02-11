@@ -25,9 +25,9 @@ export class AuthService {
   }
 
   async register(dto: CreateUserDto) {
-    const oldUser = await this.userService.getByEmail(dto.email);
+    const oldUser = await this.userService.getUserByEmail(dto.email);
     if (oldUser) throw new BadRequestException("Пользователь уже существует");
-    const user = await this.userService.create(dto);
+    const user = await this.userService.createUser(dto);
     const tokens = this.issueTokens(user.id);
     return { user, ...tokens };
   }
@@ -35,7 +35,7 @@ export class AuthService {
   async getNewTokens(refreshToken: string) {
     const result = await this.jwt.verifyAsync(refreshToken);
     if (!result) throw new UnauthorizedException("Невалидный refresh token");
-    const user = await this.userService.getById(result.id);
+    const user = await this.userService.getUserById(result.id);
     const tokens = this.issueTokens(user.id);
     return { user, ...tokens };
   }
@@ -52,7 +52,7 @@ export class AuthService {
   }
 
   private async validateUser(dto: AuthDto) {
-    const user = await this.userService.getByEmail(dto.email);
+    const user = await this.userService.getUserByEmail(dto.email);
     if (!user) throw new NotFoundException("Пользователь не найден");
     return user;
   }

@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "Task" ADD COLUMN     "answer" TEXT NOT NULL DEFAULT '',
-ADD COLUMN     "author" TEXT NOT NULL DEFAULT '';

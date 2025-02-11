@@ -8,10 +8,20 @@ export class MessageService {
     }
 
     async createMessage(dto: CreateMessageDto) {
+        const isMember = await this.prisma.collabUser.findFirst({
+            where: {userId: dto.userId, collabId: dto.collabId}
+        });
+
+        if (!isMember) {
+            throw new Error("User is not a member of this collab.");
+        }
         return this.prisma.message.create({
             data: {
                 ...dto
             },
+            include: {
+                user: true
+            }
         });
     }
 
@@ -19,6 +29,9 @@ export class MessageService {
         return this.prisma.message.findMany({
             where: {collabId},
             orderBy: {updatedAt: 'asc'},
+            include: {
+                user: true
+            }
         });
     }
 
@@ -36,10 +49,8 @@ export class MessageService {
         if (!message) throw new NotFoundException("Сообщения не существует")
         if (forAnyOne && message.userId == userId) {
             return this.prisma.message.delete({where: {id: messageId}});
-        }
-        else this.deleteAlienMessage(messageId, userId)
+        } else this.deleteAlienMessage(messageId, userId)
     }
-
 
 
     async deleteAlienMessage(messageId: number, userId: number) {

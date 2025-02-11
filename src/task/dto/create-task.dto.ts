@@ -1,15 +1,25 @@
-import {IsBoolean, IsNotEmpty, IsOptional, IsString} from "class-validator";
-
+import {
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsNotEmpty, IsObject,
+    IsOptional,
+    IsString,
+} from "class-validator";
+import {Categories, Difficulty} from "@prisma/client";
 
 export class CreateTaskDto {
+    @IsEnum(Categories)
+    @IsNotEmpty()
+    category:Categories
+
+    @IsEnum(Difficulty)
+    @IsNotEmpty()
+    difficulty: Difficulty
+
     @IsString()
     @IsNotEmpty()
     title:string
-
-
-    @IsString()
-    @IsNotEmpty()
-    category:string
 
     @IsString()
     @IsNotEmpty()
@@ -19,13 +29,10 @@ export class CreateTaskDto {
     @IsOptional()
     isDeleted:boolean
 
-    @IsString()
+    @IsArray()
     @IsNotEmpty()
-    difficulty: string
-
-    @IsString()
-    @IsNotEmpty()
-    answer: string
+    @IsObject({ each: true })  // Для каждого объекта в массиве применяем валидацию
+    testCases: TestCase[];
 
     @IsString()
     @IsNotEmpty()
@@ -35,8 +42,14 @@ export class CreateTaskDto {
     @IsNotEmpty()
     name: string
 
-
-
-
-
 }
+
+export class TestCase {
+    @IsArray()
+    @IsNotEmpty()
+    input: (number | string)[]; // input может быть массивом чисел или строк
+
+    @IsNotEmpty()
+    expected: number | string; // Ожидаемый результат может быть числом или строкой
+}
+
