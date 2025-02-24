@@ -1,8 +1,8 @@
-import {IsNumber} from "class-validator";
+import {IsNumber, IsString} from "class-validator";
 
 export class LeaveCollabDto {
-    @IsNumber()
-    collabId: number
+    @IsString()
+    collabHash: string
 
     @IsNumber()
     userId: number

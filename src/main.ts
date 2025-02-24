@@ -10,7 +10,7 @@ async function bootstrap() {
     credentials: true,
     exposedHeaders: 'set-cookie'
   });
-  app.useGlobalPipes(
+    app.useGlobalPipes(
       new ValidationPipe({
         transform: true, // Преобразует значения в указанные типы (например, enum)
         whitelist: true, // Удаляет лишние поля из тела запроса

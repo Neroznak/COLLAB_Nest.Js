@@ -9,7 +9,7 @@ export class MessageService {
 
     async createMessage(dto: CreateMessageDto) {
         const isMember = await this.prisma.collabUser.findFirst({
-            where: {userId: dto.userId, collabId: dto.collabId}
+            where: {userId: dto.userId, collabHash: dto.collabHash}
         });
 
         if (!isMember) {
@@ -25,9 +25,9 @@ export class MessageService {
         });
     }
 
-    async getMessagesByCollab(collabId: number) {
+    async getMessagesByCollab(collabHash: string) {
         return this.prisma.message.findMany({
-            where: {collabId},
+            where: {collabHash},
             orderBy: {updatedAt: 'asc'},
             include: {
                 user: true
@@ -63,25 +63,9 @@ export class MessageService {
     }
 
 
-    // async updateMessage(messageId: number, userId: number, newContent: string) {
-    //     const message = await this.prisma.message.findUnique({
-    //         where: {
-    //             id: messageId
-    //         }
-    //     });
-    //
-    //     if (message.userId !== userId) {
-    //         throw new ForbiddenException('You can only edit your own messages');
-    //     }
-    //     return this.prisma.message.update({
-    //         where: {id: messageId},
-    //         data: {content: newContent},
-    //     });
-    // }
-
-    async searchMessages(collabId: number, userId: number, query: string) {
+    async searchMessages(collabHash: string, userId: number, query: string) {
         const collab = await this.prisma.collab.findUnique({
-            where: {id: collabId},
+            where: {hash: collabHash},
             include: {user: true},
         });
 
@@ -92,7 +76,7 @@ export class MessageService {
 
         return this.prisma.message.findMany({
             where: {
-                collabId,
+                collabHash,
                 content: {contains: query},
             },
         });

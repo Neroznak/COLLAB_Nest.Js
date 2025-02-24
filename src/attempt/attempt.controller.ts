@@ -14,7 +14,7 @@ export class AttemptController {
 
   @Get("/")
   getAllAttemptsByCollab(@Body() dto: GetAttemptDto) {
-    return this.attemptService.getAllAttemptsByCollab(dto.collabId);
+    return this.attemptService.getAllAttemptsByCollab(dto.collabHash);
   }
 
 

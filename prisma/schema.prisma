@@ -18,13 +18,14 @@ model User {
   password          String?
   role              Role    @default(STUDENT)
   profilePictureUrl String  @default("https://github.com/shadcn.png")
-  language          String? // ENUM
+  language          String?
 
   collab CollabUser[]
 
   Message       Message[]
   HiddenMessage HiddenMessage[]
   Attempt       Attempt[]
+  Referal       Referal[]
 
   @@map("user")
 }
@@ -37,7 +38,7 @@ model Collab {
   name     String?
   language String?
   isPassed Boolean @default(false)
-  hash     String  @unique @default("")
+  hash     String  @unique
 
   Message Message[]
   user    CollabUser[]
@@ -45,18 +46,19 @@ model Collab {
   taskId  Int
   task    Task      @relation(fields: [taskId], references: [id])
   Attempt Attempt[]
+  Referal Referal[]
 }
 
 model CollabUser {
   id Int @id @default(autoincrement())
 
-  userId   Int
-  collabId Int
+  userId     Int
+  collabHash String
 
   User   User   @relation(fields: [userId], references: [id])
-  Collab Collab @relation(fields: [collabId], references: [id])
+  Collab Collab @relation(fields: [collabHash], references: [hash])
 
-  @@unique([userId, collabId]) // Уникальный составной ключ
+  @@unique([userId, collabHash]) // Уникальный составной ключ
 }
 
 model Message {
@@ -68,8 +70,8 @@ model Message {
   attachments      String  @default("")
   replyToMessageId String  @default("")
   isRead           Boolean @default(false)
-  collabId         Int
-  collab           Collab  @relation(fields: [collabId], references: [id])
+  collabHash       String
+  collab           Collab  @relation(fields: [collabHash], references: [hash])
 
   userId        Int
   user          User            @relation(fields: [userId], references: [id])
@@ -152,11 +154,26 @@ model Attempt {
   isPassed   Boolean @default(false)
   output     Json?
 
-  collabId Int
-  collab   Collab @relation(fields: [collabId], references: [id])
+  collabHash String
+  collab     Collab @relation(fields: [collabHash], references: [hash])
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
+}
+
+model Referal {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  referal String   @unique
+  expires DateTime
+
+  collabHash String
+  Collab     Collab @relation(fields: [collabHash], references: [hash])
+
+  userId Int
+  User   User @relation(fields: [userId], references: [id])
 }
 
 enum Categories {

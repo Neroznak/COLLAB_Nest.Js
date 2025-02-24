@@ -14,14 +14,14 @@ export class AttemptService {
     }
 
     async execute(dto: CreateAttemptDto) {
-        const {userAnswer, collabId, userId} = dto;
-        const {isPassed, output} = await this.checkUserAnswer(userAnswer, collabId);
+        const {userAnswer, collabHash, userId} = dto;
+        const {isPassed, output} = await this.checkUserAnswer(userAnswer, collabHash);
         if(isPassed) {
-            await this.collabService.collabIsPassed(collabId);
+            await this.collabService.collabIsPassed(collabHash);
         }
         const dataForCreateAttempt = {
             userAnswer,
-            collabId,
+            collabHash,
             userId,
             isPassed,
             output
@@ -29,8 +29,8 @@ export class AttemptService {
         return this.createAttemp(dataForCreateAttempt)
     }
 
-    async checkUserAnswer(userAnswer: string, collabId: number) {
-        const collab = await this.collabService.getCollabById(collabId);
+    async checkUserAnswer(userAnswer: string, collabHash: string) {
+        const collab = await this.collabService.getCollabByHash(collabHash);
         const testCases = collab.task.testCases;
         try {
             const jsCode = ts.transpile(userAnswer);
@@ -80,10 +80,10 @@ export class AttemptService {
         });
     }
 
-    async getAllAttemptsByCollab(collabId: number) {
+    async getAllAttemptsByCollab(collabHash: string) {
         return this.prisma.attempt.findMany({
             where: {
-                collabId: collabId
+                collabHash: collabHash
             }
         });
     }

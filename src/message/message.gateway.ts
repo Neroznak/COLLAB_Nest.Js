@@ -54,7 +54,7 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.server.emit('sendMessage', {
       id: createdMessage.id,
       content: createdMessage.content,
-      collabId: createdMessage.collabId,
+      collabHash: createdMessage.collabHash,
       userId: createdMessage.userId,
       user: createdMessage.user
     });

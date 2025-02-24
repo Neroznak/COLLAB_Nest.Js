@@ -6,8 +6,8 @@ export class CreateAttemptDto {
     userAnswer: string;
 
     @IsNotEmpty()
-    @IsNumber()
-    collabId: number;
+    @IsString()
+    collabHash: string;
 
     @IsNotEmpty()
     @IsNumber()

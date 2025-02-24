@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { AttemptService } from './attempt.service';
 import { AttemptController } from './attempt.controller';
 import {PrismaService} from "../prisma.service";
-import {CollabService} from "../collab/collab.service";
-import {TaskService} from "../task/task.service";
-import {UserService} from "../user/user.service";
+import {CollabModule} from "../collab/collab.module";
 
 @Module({
   controllers: [AttemptController],
-  providers: [AttemptService, PrismaService, CollabService, TaskService, UserService],
+  providers: [AttemptService, PrismaService],
+  exports:[AttemptService],
+  imports: [CollabModule],
 })
 export class AttemptModule {}

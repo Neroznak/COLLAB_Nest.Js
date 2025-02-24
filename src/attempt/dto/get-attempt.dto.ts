@@ -1,11 +1,11 @@
-import { IsNotEmpty,  IsNumber } from 'class-validator';
+import {IsNotEmpty, IsString} from 'class-validator';
 
 export class GetAttemptDto {
 
 
     @IsNotEmpty()
-    @IsNumber()
-    collabId: number;
+    @IsString()
+    collabHash: string;
 
 
 }

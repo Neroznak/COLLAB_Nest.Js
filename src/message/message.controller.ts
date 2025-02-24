@@ -1,4 +1,4 @@
-import {Controller, Get, Param, Delete, UseGuards, Query, ParseIntPipe} from "@nestjs/common";
+import {Controller, Get, Param, Delete, UseGuards, Query, ParseIntPipe, UsePipes, ValidationPipe} from "@nestjs/common";
 import { MessageService } from "./message.service";
 import { JWTAuthGuard } from "../auth/guards/jwt-auth.guard";
 import {CurrentUser} from "../user/decorators/user.decorator";
@@ -9,9 +9,11 @@ export class MessageController {
   constructor(private readonly messageService: MessageService) {
   }
 
-  @Get(":collabId")
-  async getMessagesByCollab(@Param("collabId") collabId: string) {
-    return this.messageService.getMessagesByCollab(+collabId);
+  @UseGuards(JWTAuthGuard) // Применение защитного механизма
+  @UsePipes(new ValidationPipe())
+  @Get(":collabHash")
+  async getMessagesByCollab(@Param("collabHash") collabHash: string) {
+    return this.messageService.getMessagesByCollab(collabHash);
   }
   
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
@@ -23,10 +25,10 @@ export class MessageController {
   }
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
-  @Get('search/:chatId')
-  async searchMessages(@Param("chatId", ParseIntPipe) chatId: number,
+  @Get('search/:collabHash')
+  async searchMessages(@Param("collabHash") collabHash: string,
                        @CurrentUser("id") userId: number,
                        @Query('query') query: string) {
-    return this.messageService.searchMessages(chatId, userId, query);
+    return this.messageService.searchMessages(collabHash, userId, query);
   }
 }

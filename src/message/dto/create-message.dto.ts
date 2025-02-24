@@ -8,7 +8,7 @@ export class CreateMessageDto {
   @IsInt()
   userId: number; //  ID пользователя
 
-  @IsInt()
-  collabId: number; //  ID чата
+  @IsString()
+  collabHash: string; //  ID чата
 
 }
