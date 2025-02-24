@@ -49,9 +49,10 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
 
   @SubscribeMessage('newMessage')
   async handleMessage(client: Socket, payload: CreateMessageDto) {
+    client.join(payload.collabHash);
     this.logger.log(`Сообщение получено от клиента ${client.id}: ${JSON.stringify(payload)}`);
     const createdMessage = await this.messageService.createMessage(payload);
-    this.server.emit('sendMessage', {
+    this.server.to(payload.collabHash).emit('sendMessage', {
       id: createdMessage.id,
       content: createdMessage.content,
       collabHash: createdMessage.collabHash,
