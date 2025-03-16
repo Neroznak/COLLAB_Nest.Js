@@ -5,6 +5,8 @@ import {CreateAttemptDto} from "./dto/create-attempt.dto";
 import * as ts from 'typescript'
 import {CollabService} from "../collab/collab.service";
 import {TestCase} from "../task/dto/create-task.dto";
+import { isEqual } from 'lodash';
+
 
 @Injectable()
 export class AttemptService {
@@ -59,7 +61,10 @@ export class AttemptService {
             for (const {input, expected} of parsedTestCases) {
                 try {
                     const check = await userFunctionRef.apply(undefined, input, {timeout: 10000}); // Ограничение по времени
-                    isPassed = check === expected;
+                    console.log("Ожидаем: ",expected );
+                    console.log("Получаем: ", check)
+                    isPassed = isEqual(check, expected);
+                    console.log("isPassed = ", isPassed)
                     output.push(check);
                     if (!isPassed) break;
                 } catch (executionError) {

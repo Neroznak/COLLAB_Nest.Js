@@ -66,15 +66,7 @@ export class TaskService {
         return this.prisma.task.findUnique({
             where: {
                 id: taskId,
-            },
-            include: {
-                TaskTheory:{
-                    include: {
-                        Theory: true
-                    }
-                }
             }
-
         })
     }
 }

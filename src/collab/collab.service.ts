@@ -1,20 +1,17 @@
 import {
-    BadRequestException,
-    ForbiddenException, forwardRef, Inject,
+    BadRequestException, forwardRef, Inject,
     Injectable,
     InternalServerErrorException
 } from '@nestjs/common';
 import {PrismaService} from "../prisma.service";
-import {UpdateCollabDto} from "./dto/update-collab.dto";
 import {randomBytes} from "crypto";
 import {GetTaskDto} from "../task/dto/get-task.dto";
 import {TaskService} from "../task/task.service";
 import {AuthService} from "../auth/auth.service";
-import {GetCollabForUsersDto} from "./dto/get-collab-for-users.dto";
 import {ReferalService} from "../referal/referal.service";
-import {UserService} from "../user/user.service";
 import {CreateUserDto} from "../user/dto/create-user.dto";
 import {CollabGateway} from "./collab.gateway";
+import {GetReferalDto} from "../referal/dto/get-referal.dto";
 
 @Injectable()
 export class CollabService {
@@ -22,8 +19,7 @@ export class CollabService {
     constructor(protected readonly prisma: PrismaService,
                 private readonly taskService: TaskService,
                 private readonly referalService: ReferalService,
-                @Inject(forwardRef(() => UserService))  private readonly userService: UserService,
-                @Inject(forwardRef(() => AuthService))  private readonly authService: AuthService,
+                @Inject(forwardRef(() => AuthService)) private readonly authService: AuthService,
                 private readonly collabGateway: CollabGateway) {
     }
 
@@ -41,21 +37,28 @@ export class CollabService {
         return {collab, user, accessToken}
     }
 
-    async getCollabForUser(dto: GetCollabForUsersDto) {
-        const {collabHash, userId, referal} = dto;
-        if (userId && await this.isUserInCollab(userId, collabHash)) {
-            const collab = await this.getCollabByHash(collabHash)
-            const isUserNew = false;
-            const user = await this.userService.getUserById(userId)
-            return {collab, isUserNew, user}
-        }
-        if (referal && await this.referalService.isReferalLinkCorrect(referal, collabHash)) {
-            const {user, accessToken} = await this.authService.register();
-            const collabWithUser = await this.addUserToCollab(user.id, collabHash)
-            const collab = await this.getCollabByHash(collabWithUser.hash)
-            const isUserNew = true;
-            return {collab, isUserNew, user, accessToken}
-        } else throw new ForbiddenException('У вас нет доступа к этому ресурсу');
+    async invite(dto: GetReferalDto) {
+        const referal = dto.referal;
+        const isReferalNotExpired = await this.referalService.isReferalLinkCorrect(referal);
+        if (!isReferalNotExpired) throw new BadRequestException("Время действия ссылки закончилось")
+        const collabHash = await this.referalService.getCollabHashByReferal(referal);
+        const {user, accessToken} = await this.authService.register();
+        const collabWithUser = await this.addUserToCollab(user.id, collabHash)
+        const collab = await this.getCollabByHash(collabWithUser.hash)
+        return {collab, accessToken}
+    }
+
+    async getCollab(collabHash: string, userId: number) {
+        const collab = await this.getCollabByHash(collabHash);
+        const collabUser = await this.prisma.collabUser.findFirst({
+            where: {
+                collabHash: collabHash,
+                userId: userId
+            }
+        });
+        if (!collabUser) throw new BadRequestException("User is not in collab")
+        return collab;
+
 
     }
 
@@ -106,26 +109,10 @@ export class CollabService {
                 throw new InternalServerErrorException('Error adding user to collab');
             }
             const users = await this.getAllUsersForCollab(collabHash);
-            console.log("в emit уйдут вот такие user'ы: - ", JSON.stringify(users))
             this.collabGateway.server.to(collabHash).emit('updateUsers', users);
             return await this.getCollabByHash(collabHash)
         } else throw new BadRequestException("Collab is not available");
 
-    }
-
-    async updateCollab(collabHash: string, UpdateCollabDto: UpdateCollabDto) {
-        try {
-            return this.prisma.collab.update({
-                where: {
-                    hash: collabHash
-                },
-                data: {
-                    ...UpdateCollabDto,
-                }
-            });
-        } catch (error) {
-            throw new BadRequestException(error)
-        }
     }
 
     async getCollabByHash(hash: string) {
@@ -154,7 +141,7 @@ export class CollabService {
     async isCollabAvailable(collabHash: string) {
         const collab = await this.getCollabByHash(collabHash);
         const users = await this.prisma.collabUser.findMany({
-            where:{
+            where: {
                 collabHash: collabHash
             }
         })
@@ -173,18 +160,6 @@ export class CollabService {
         )
     }
 
-    async isUserInCollab(userId: number, collabHash: string) {
-        const user = this.prisma.collabUser.findFirst({
-            where: {
-                collabHash: collabHash,
-                userId: userId
-            }
-        })
-        return !!user;
-
-
-    }
-
     async getAllUsersForCollab(collabHash: string) {
         const usersInCollab = await this.prisma.collabUser.findMany({
             where: {collabHash: collabHash},
@@ -199,7 +174,7 @@ export class CollabService {
             }
         });
 
-        return  usersInCollab.map(collabUser => ({
+        return usersInCollab.map(collabUser => ({
             id: collabUser.User.id,
             profilePictureUrl: collabUser.User.profilePictureUrl,
             userName: collabUser.User.userName

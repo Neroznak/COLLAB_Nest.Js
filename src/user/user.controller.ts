@@ -1,5 +1,5 @@
 import {Body, Controller, Get, Param, Patch, Post, Query, UseGuards,} from '@nestjs/common';
-import { UserService } from './user.service';
+import {UserService } from './user.service';
 import {CreateUserDto} from "./dto/create-user.dto";
 import {UpdateUserDto} from "./dto/update-user.dto";
 import {CollabService} from "../collab/collab.service";
@@ -16,12 +16,6 @@ export class UserController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }
-
-  // @UseGuards(JWTAuthGuard)
-  // @Get(':id')
-  // getById(@Param('id') id: string) {
-  //   return this.userService.getUserById(+id);
-  // }
 
   @Get('')
   getByEmail(@Query('email') email: string) {

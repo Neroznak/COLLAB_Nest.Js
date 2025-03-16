@@ -1,4 +1,4 @@
-import {Controller, Get, Param, Delete, UseGuards, Query, ParseIntPipe, UsePipes, ValidationPipe} from "@nestjs/common";
+import {Controller, Get, Param,  UseGuards, Query,  UsePipes, ValidationPipe} from "@nestjs/common";
 import { MessageService } from "./message.service";
 import { JWTAuthGuard } from "../auth/guards/jwt-auth.guard";
 import {CurrentUser} from "../user/decorators/user.decorator";
@@ -15,14 +15,7 @@ export class MessageController {
   async getMessagesByCollab(@Param("collabHash") collabHash: string) {
     return this.messageService.getMessagesByCollab(collabHash);
   }
-  
-  @UseGuards(JWTAuthGuard) // Применение защитного механизма
-  @Delete(":messageId")
-  async deleteMessage(@Param("messageId", ParseIntPipe) messageId: number,
-                      @CurrentUser("id") userId: number,
-                      @Query ('forAnyOne') forAnyOne: boolean,) {
-    return this.messageService.deleteMessage(messageId, userId, forAnyOne);
-  }
+
 
   @UseGuards(JWTAuthGuard) // Применение защитного механизма
   @Get('search/:collabHash')

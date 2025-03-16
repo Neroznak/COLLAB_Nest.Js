@@ -1,4 +1,4 @@
-import { Categories, Difficulty, Collab, TaskTheory } from '@prisma/client'; // Импорт перечислений из Prisma
+import {Categories, Collab, Difficulty} from "@prisma/client";
 
 export class Task {
     id: number; // Поле id, тип number
@@ -10,5 +10,4 @@ export class Task {
     isDeleted: boolean; // Поле isDeleted, тип boolean
     difficulty: Difficulty; // Поле difficulty, использует enum Difficulty из Prisma
     collab: Collab[]; // Поле collab для связи с другими сущностями, тип можно уточнить
-    taskTheory: TaskTheory[]; // Поле taskTheory, аналогично collab
 }

@@ -1,4 +1,4 @@
-import {ForbiddenException, Injectable, NotFoundException} from "@nestjs/common";
+import {ForbiddenException, Injectable} from "@nestjs/common";
 import {PrismaService} from "../prisma.service";
 import {CreateMessageDto} from "./dto/create-message.dto";
 
@@ -44,23 +44,23 @@ export class MessageService {
         });
     }
 
-    async deleteMessage(messageId: number, userId: number, forAnyOne: boolean) {
-        const message = await this.prisma.message.findUnique({where: {id: messageId}});
-        if (!message) throw new NotFoundException("Сообщения не существует")
-        if (forAnyOne && message.userId == userId) {
-            return this.prisma.message.delete({where: {id: messageId}});
-        } else this.deleteAlienMessage(messageId, userId)
-    }
+    // async deleteMessage(messageId: number, userId: number, forAnyOne: boolean) {
+    //     const message = await this.prisma.message.findUnique({where: {id: messageId}});
+    //     if (!message) throw new NotFoundException("Сообщения не существует")
+    //     if (forAnyOne && message.userId == userId) {
+    //         return this.prisma.message.delete({where: {id: messageId}});
+    //     } else this.deleteAlienMessage(messageId, userId)
+    // }
 
 
-    async deleteAlienMessage(messageId: number, userId: number) {
-        return this.prisma.hiddenMessage.create({
-            data: {
-                messageId: messageId,
-                userId: userId
-            }
-        })
-    }
+    // async deleteAlienMessage(messageId: number, userId: number) {
+    //     return this.prisma.hiddenMessage.create({
+    //         data: {
+    //             messageId: messageId,
+    //             userId: userId
+    //         }
+    //     })
+    //}
 
 
     async searchMessages(collabHash: string, userId: number, query: string) {

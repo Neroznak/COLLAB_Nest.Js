@@ -1,12 +1,12 @@
-import {Controller, Body, Patch, Param, Get, Post, UsePipes, ValidationPipe, UseGuards} from '@nestjs/common';
+import {Controller, Body, Post, UsePipes, ValidationPipe, UseGuards, Get, Param, Delete} from '@nestjs/common';
 import {CollabService} from './collab.service';
-import {UpdateCollabDto} from './dto/update-collab.dto';
 import {GetTaskDto} from "../task/dto/get-task.dto";
 import {CreateUserDto} from "../user/dto/create-user.dto";
-import {GetCollabDto} from "./dto/get-collab.dto";
-import {LeaveCollabDto} from "./dto/leave-collab.dto";
 import {JWTAuthGuard} from "../auth/guards/jwt-auth.guard";
-import {GetCollabForUsersDto} from "./dto/get-collab-for-users.dto";
+import {ApiBody, ApiOperation, ApiParam, ApiResponse} from "@nestjs/swagger";
+import {GetReferalDto} from "../referal/dto/get-referal.dto";
+import {CurrentUser} from "../user/decorators/user.decorator";
+import {User} from "@prisma/client";
 
 @Controller('collab')
 export class CollabController {
@@ -20,38 +20,34 @@ export class CollabController {
     }
 
     @UsePipes(new ValidationPipe())
-    @Post("get")
-    async getCollabForUser(@Body() dto: GetCollabForUsersDto) {
-        return await this.collabService.getCollabForUser(dto);
+    @ApiOperation({summary: 'Добавить приглашённого userа в collab. Проверка referal, получение collabHash,' +
+            'регистрация пользователя, добавление его в collab, вернуть collab'})
+    @ApiBody({schema: {example: {referal: '6fa9e00c1c633595'}}})
+    @ApiResponse({status: 201, description: 'Пользователь приглашён'})
+    @Post("invite")
+    async invite(@Body() GetReferalDto: GetReferalDto) {
+        return await this.collabService.invite(GetReferalDto);
     }
+
+
+    @UseGuards(JWTAuthGuard)
+    @ApiOperation({summary: 'Вернуть данные о collab'})
+    @ApiParam({ name: "collabHash", required: true, description: "Хеш collab", example: "40bc23e8" })
+    @ApiResponse({status: 200, description: 'Данные получены'})
+    @Get(":collabHash")
+    async getCollab(@Param("collabHash") collabHash: string, @CurrentUser() user:User) {
+        return await this.collabService.getCollab(collabHash, user.id);
+    }
+
 
     @UseGuards(JWTAuthGuard)
     @UsePipes(new ValidationPipe())
-    @Patch('')
-    update(@Body() getCollabDto: GetCollabDto,
-           @Body() updateCollabDto: UpdateCollabDto) {
-        return this.collabService.updateCollab(getCollabDto.collabHash, updateCollabDto);
-    }
-
-    @UseGuards(JWTAuthGuard)
-    @UsePipes(new ValidationPipe())
-    @Get(':collabHash')
-    async getCollab(@Param('collabHash') collabHash: string) {
-        return this.collabService.getCollabByHash(collabHash);
-    }
-
-    @UseGuards(JWTAuthGuard)
-    @UsePipes(new ValidationPipe())
-    @Post('/leave')
-    async leave(@Body() dto: LeaveCollabDto) {
-        return this.collabService.leaveUserFromCollab(dto.userId, dto.collabHash);
-    }
-
-
-    @UsePipes (new ValidationPipe())
-    @Post ("add")
-    async addUserToCollab (@Body() leaveCollabDto: LeaveCollabDto) {
-        return await this.collabService.addUserToCollab(leaveCollabDto.userId, leaveCollabDto.collabHash);
+    @ApiOperation({summary: 'Выход usera из collaba'})
+    @ApiBody({schema: {example: {referal: '40bc23e840bc23e8'}}})
+    @ApiResponse({status: 201, description: 'Пользователь приглашён'})
+    @Delete(':coll  abHash/leave')
+    async leave(@Param("collabHash") collabHash: string, @CurrentUser() user:User) {
+        return this.collabService.leaveUserFromCollab(user.id, collabHash);
     }
 
 

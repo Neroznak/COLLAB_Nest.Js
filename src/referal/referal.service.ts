@@ -25,17 +25,26 @@ export class ReferalService {
         });
     }
 
-    async isReferalLinkCorrect(referal: string, collabHash: string) {
+    async isReferalLinkCorrect(referal: string) {
         const referalData = await this.prisma.referal.findFirst({
             where: {
                 referal: referal,
-                collabHash: collabHash
             },
         });
         if (!referalData) return false; // Если ссылка не найдена, возвращаем false
 
-        return referalData.expires.getTime() > Date.now(); // Проверяем, не истек ли срок
+        return referalData.expires.getTime() > Date.now();
     }
+
+    async getCollabHashByReferal(referal) {
+        const referalEssense = await this.prisma.referal.findUnique({
+            where: {
+                referal: referal
+            }
+        })
+        return referalEssense.collabHash;
+    }
+
 
 
 }

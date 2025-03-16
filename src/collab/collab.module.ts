@@ -16,9 +16,9 @@ import { ReferalModule } from "../referal/referal.module";
   exports: [CollabService, CollabGateway],
   imports: [
     TaskModule,
-    forwardRef(() => AuthModule), // forwardRef для AuthModule
-    forwardRef(() => UserModule), // forwardRef для UserModule
-    ReferalModule,
+    forwardRef(() => AuthModule),
+    forwardRef(() => UserModule),
+    ReferalModule
   ],
 })
 export class CollabModule {}

@@ -19,12 +19,6 @@ export class TaskController {
   }
 
 
-  // @Get('')
-  // findForCollab(@Query('difficulty') difficulty: Difficulty,
-  //               @Query('category') category: Categories,) {
-  //   return this.taskService.findForCollab(difficulty, category);
-  // }
-
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
     return this.taskService.update(+id, updateTaskDto);

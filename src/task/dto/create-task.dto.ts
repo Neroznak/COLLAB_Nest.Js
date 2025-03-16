@@ -47,9 +47,8 @@ export class CreateTaskDto {
 export class TestCase {
     @IsArray()
     @IsNotEmpty()
-    input: (number | string)[]; // input может быть массивом чисел или строк
-
+    input: (number | string | number[] | string[] | [number[], number] | [string[], string])[];
     @IsNotEmpty()
-    expected: number | string; // Ожидаемый результат может быть числом или строкой
+    expected: (number | string | number[] | string[] | [number[], number] | [string[], string])[]
 }
 
