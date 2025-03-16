@@ -1,6 +1,5 @@
 import {Controller, Body, Post, UsePipes, ValidationPipe, UseGuards, Get, Param, Delete} from '@nestjs/common';
 import {CollabService} from './collab.service';
-import {GetTaskDto} from "../task/dto/get-task.dto";
 import {CreateUserDto} from "../user/dto/create-user.dto";
 import {JWTAuthGuard} from "../auth/guards/jwt-auth.guard";
 import {ApiBody, ApiOperation, ApiParam, ApiResponse} from "@nestjs/swagger";
@@ -15,8 +14,8 @@ export class CollabController {
 
     @UsePipes(new ValidationPipe())
     @Post("join")
-    async joinToCollab(@Body() body:{ createUserDto: CreateUserDto, getTaskDto: GetTaskDto }) {
-        return await this.collabService.joinToCollab(body.createUserDto, body.getTaskDto);
+    async joinToCollab(@Body() createUserDto: CreateUserDto) {
+        return await this.collabService.joinToCollab(createUserDto);
     }
 
     @UsePipes(new ValidationPipe())
@@ -44,8 +43,8 @@ export class CollabController {
     @UsePipes(new ValidationPipe())
     @ApiOperation({summary: 'Выход usera из collaba'})
     @ApiBody({schema: {example: {referal: '40bc23e840bc23e8'}}})
-    @ApiResponse({status: 201, description: 'Пользователь приглашён'})
-    @Delete(':coll  abHash/leave')
+    @ApiResponse({status: 204, description: 'User покинул collab'})
+    @Delete(':collabHash/leave')
     async leave(@Param("collabHash") collabHash: string, @CurrentUser() user:User) {
         return this.collabService.leaveUserFromCollab(user.id, collabHash);
     }

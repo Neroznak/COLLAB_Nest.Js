@@ -5,13 +5,14 @@ import {
 } from '@nestjs/common';
 import {PrismaService} from "../prisma.service";
 import {randomBytes} from "crypto";
-import {GetTaskDto} from "../task/dto/get-task.dto";
 import {TaskService} from "../task/task.service";
 import {AuthService} from "../auth/auth.service";
 import {ReferalService} from "../referal/referal.service";
 import {CreateUserDto} from "../user/dto/create-user.dto";
 import {CollabGateway} from "./collab.gateway";
 import {GetReferalDto} from "../referal/dto/get-referal.dto";
+import { Categories, Difficulty } from '@prisma/client'; // Импортируем enum из Prisma
+
 
 @Injectable()
 export class CollabService {
@@ -23,18 +24,21 @@ export class CollabService {
                 private readonly collabGateway: CollabGateway) {
     }
 
-    async joinToCollab(createUserDto: CreateUserDto, getTaskDto: GetTaskDto) {
+    async joinToCollab(createUserDto: CreateUserDto) {
         const {user, accessToken} = await this.authService.register(createUserDto);
-        const existCollab = await this.getAvailableCollabByTask(getTaskDto);
-        let collab;
+        const existCollab = await this.getAvailableCollabByTask();
+        let collabHash;
         if (existCollab) {
-            collab = await this.addUserToCollab(user.id, existCollab.hash);
+            const collab = await this.addUserToCollab(user.id, existCollab.hash);
+            collabHash = collab.hash;
+
         } else {
-            const taskForCollab = await this.taskService.getTaskForCollab(getTaskDto);
+            const taskForCollab = await this.taskService.getTaskForCollab();
             const emptyCollab = await this.createCollab(taskForCollab.id);
-            collab = await this.addUserToCollab(user.id, emptyCollab.hash);
+            const collab = await this.addUserToCollab(user.id, emptyCollab.hash);
+            collabHash = collab.hash;
         }
-        return {collab, user, accessToken}
+        return {collabHash, accessToken}
     }
 
     async invite(dto: GetReferalDto) {
@@ -62,7 +66,12 @@ export class CollabService {
 
     }
 
-    async getAvailableCollabByTask(getTaskDto: GetTaskDto) {
+    async getAvailableCollabByTask() {
+        const getTaskDto = {
+            category: Categories.TYPESCRIPT,
+            difficulty: Difficulty.JUNIOR,
+            title : "Простые функции"
+        }
         try {
             const activeIsnotpassedCollabs = await this.prisma.collab.findMany({
                 where: {
@@ -116,7 +125,7 @@ export class CollabService {
     }
 
     async getCollabByHash(hash: string) {
-        return this.prisma.collab.findUnique({
+        const collab = await this.prisma.collab.findUnique({
             where: {
                 hash: hash
             },
@@ -125,6 +134,8 @@ export class CollabService {
                 Message: true,
             }
         })
+        if(!collab) throw new BadRequestException("Collab not found");
+        return collab;
     }
 
     async leaveUserFromCollab(userId: number, collabHash: string): Promise<void> {

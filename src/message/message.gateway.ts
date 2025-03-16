@@ -44,23 +44,37 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     this.logger.log(`Клиент отключён: ${client.id}. Всего подключений: ${this.connectedClients}`);
   }
 
-  // newMessage — это входящее событие, используемое для передачи данных от клиента серверу.
-  // sendMessage — это исходящее событие, используемое для передачи данных от сервера клиентам.
+  @SubscribeMessage('joinCollab')
+  handleJoinRoom(client: Socket, collabHash: string) {
+    client.join(collabHash);
+    this.logger.log(`Клиент ${client.id} присоединился к комнате: ${collabHash}`);
+  }
 
-  @SubscribeMessage('newMessage')
+    @SubscribeMessage('leaveRoom')
+  handleLeaveRoom(client: Socket, collabHash: string) {
+    client.leave(collabHash);
+    this.logger.log(`Клиент ${client.id} покинул комнату: ${collabHash}`);
+  }
+
+  @SubscribeMessage('sendMessage')
   async handleMessage(client: Socket, payload: CreateMessageDto) {
-    client.join(payload.collabHash);
     this.logger.log(`Сообщение получено от клиента ${client.id}: ${JSON.stringify(payload)}`);
+
     const createdMessage = await this.messageService.createMessage(payload);
-    this.server.to(payload.collabHash).emit('sendMessage', {
+
+    this.server.to(payload.collabHash).emit('receiveMessage', {
       id: createdMessage.id,
       content: createdMessage.content,
       collabHash: createdMessage.collabHash,
       userId: createdMessage.userId,
       user: createdMessage.user
     });
-    return `Message saved: ${createdMessage.id}`; // Возвращай ID сохраненного сообщения или другой ответ
+
+    return `Message saved: ${createdMessage.id}`;
   }
+
+
+
 
   @SubscribeMessage('markAsRead')
   async handleMarkAsRead(client: Socket, payload: IsReadMessageDto): Promise<void> {
@@ -68,11 +82,6 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
     client.emit('messageRead', payload.messageId);
   }
 
-  // @SubscribeMessage('updateMessage')
-  // async handleUpdateMessage(client: Socket, payload: UpdateMessageDto): Promise<void> {
-  //   await this.messageService.updateMessage(payload.messageId, payload.userId, payload.content);
-  //   client.emit('messageRead', payload.messageId);
-  // }
 
 
 
