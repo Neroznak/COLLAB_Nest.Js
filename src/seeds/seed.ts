@@ -6,10 +6,10 @@ async function main() {
     await prisma.task.create({
         data: {
             category:Categories.TYPESCRIPT,
-            content: "Определите функцию, которая выполняет сложение двух чисел.",
+            content: "Define a function that performs addition of two numbers.",
             isDeleted: false,
             difficulty: Difficulty.JUNIOR,
-            author: "Дмитрий Н.",
+            author: "Dmitry N.",
             name: "Сложение двух чисел",
             title: "Простые функции",
             initial_data: "function add (a:number, b:number) {\n" +

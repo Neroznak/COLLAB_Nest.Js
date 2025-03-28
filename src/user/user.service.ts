@@ -4,7 +4,7 @@ import {hash} from 'argon2';
 import {CreateUserDto} from "./dto/create-user.dto";
 import {UpdateUserDto} from "./dto/update-user.dto";
 
-import {forwardRef, Inject } from '@nestjs/common';
+import {forwardRef, Inject} from '@nestjs/common';
 import {CollabService} from "../collab/collab.service";
 import {CollabGateway} from "../collab/collab.gateway";
 
@@ -14,7 +14,8 @@ export class UserService {
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => CollabService)) private readonly collabService: CollabService,
         @Inject(forwardRef(() => CollabGateway)) private readonly collabGateway: CollabGateway,
-    ) {}
+    ) {
+    }
 
     async getUserById(userId: number) {
         return this.prisma.user.findUnique({
@@ -34,6 +35,7 @@ export class UserService {
             data: {
                 ...dto,
                 password: dto?.password ? await hash(dto.password) : undefined,
+                profilePictureUrl: await this.getRandomAvatar()
             }
         });
     }
@@ -48,7 +50,7 @@ export class UserService {
             }
         });
         const collabUser = await this.prisma.collabUser.findFirst({
-            where:{
+            where: {
                 userId: (await user).id
             }
         })
@@ -56,5 +58,29 @@ export class UserService {
         this.collabGateway.server.to(collabUser.collabHash).emit('updateUsers', users);
 
         return user;
+    }
+
+    async getRandomAvatar() {
+        const avatars = ["https://api.dicebear.com/9.x/big-ears/svg?seed=Aidan",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Jessica",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Ryker",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Mason",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Easton",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Alexander",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Ryan",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Avery",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Liam",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Emery",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Eden",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Sophia",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Valentina",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Mackenzie",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Sawyer",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Eliza",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Brooklynn",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Sadie",
+            "https://api.dicebear.com/9.x/big-ears/svg?seed=Adrian",
+        ]
+        return avatars[Math.floor(Math.random() * avatars.length)];
     }
 }

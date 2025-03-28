@@ -48,9 +48,6 @@ export class CollabGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
 
 
-    // updateCollabUsers - приходит от клиента на сервер
-    // updayeUsers - от сервера клиентам
-
     @SubscribeMessage('joinToCollab')
     async handleJoinCollab(client: Socket, collabHash: string) {
         client.join(collabHash);

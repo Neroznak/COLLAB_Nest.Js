@@ -67,7 +67,8 @@ export class MessageGateway implements OnGatewayInit, OnGatewayConnection, OnGat
       content: createdMessage.content,
       collabHash: createdMessage.collabHash,
       userId: createdMessage.userId,
-      user: createdMessage.user
+      user: createdMessage.user,
+      isSystemMessage: createdMessage.isSystemMessage,
     });
 
     return `Message saved: ${createdMessage.id}`;

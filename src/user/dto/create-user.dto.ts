@@ -18,10 +18,6 @@ export class CreateUserDto {
 
     @IsString()
     @IsOptional()
-    profilePictureUrl: string;
-
-    @IsString()
-    @IsOptional()
     language: string;
 
 

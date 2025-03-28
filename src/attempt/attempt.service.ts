@@ -17,7 +17,11 @@ export class AttemptService {
 
     async execute(dto: CreateAttemptDto) {
         const {userAnswer, collabHash, userId} = dto;
-        const {isPassed, output} = await this.checkUserAnswer(userAnswer, collabHash);
+        const {isPassed, output:initialOutput, maxExecutionTime} = await this.checkUserAnswer(userAnswer, collabHash);
+        const executionTime = maxExecutionTime;
+        let output;
+        if(initialOutput == "Illegal return statement [<isolated-vm>:3:17]")  output = "Error in code execution. Please return to the source code.";
+        else  output = initialOutput;
         if(isPassed) {
             await this.collabService.collabIsPassed(collabHash);
         }
@@ -26,7 +30,8 @@ export class AttemptService {
             collabHash,
             userId,
             isPassed,
-            output
+            output,
+            executionTime,
         };
         return this.createAttemp(dataForCreateAttempt)
     }
@@ -56,22 +61,25 @@ export class AttemptService {
 
             // Запускаем тесты внутри песочницы
             let isPassed = false;
+            let executionTime;
+            let maxExecutionTime = 0; // Максимальное время выполнения
             const output = [];
             const parsedTestCases = Array.isArray(testCases) ? (testCases as unknown as TestCase[]) : [];
             for (const {input, expected} of parsedTestCases) {
                 try {
+                    const start = Date.now();
                     const check = await userFunctionRef.apply(undefined, input, {timeout: 10000}); // Ограничение по времени
-                    console.log("Ожидаем: ",expected );
-                    console.log("Получаем: ", check)
+                    const finish = Date.now();
                     isPassed = isEqual(check, expected);
-                    console.log("isPassed = ", isPassed)
                     output.push(check);
+                    executionTime = finish - start;
+                    maxExecutionTime = Math.max(maxExecutionTime, executionTime);
                     if (!isPassed) break;
                 } catch (executionError) {
                     output.push(executionError.message);
                 }
             }
-            return {isPassed, output};
+            return {isPassed, output, maxExecutionTime};
         } catch (compilationError) {
             return {isPassed: false, output: compilationError.message};
         }
@@ -89,6 +97,9 @@ export class AttemptService {
         return this.prisma.attempt.findMany({
             where: {
                 collabHash: collabHash
+            },
+            orderBy:{
+                createdAt: "desc"
             }
         });
     }

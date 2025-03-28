@@ -69,6 +69,7 @@ model Message {
   replyToMessageId String  @default("")
   isRead           Boolean @default(false)
   collabHash       String
+  isSystemMessage  Boolean @default(false)
   collab           Collab  @relation(fields: [collabHash], references: [hash])
 
   userId Int
@@ -98,12 +99,12 @@ model Attempt {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  userAnswer String
-  isPassed   Boolean @default(false)
-  output     Json?
-
-  collabHash String
-  collab     Collab @relation(fields: [collabHash], references: [hash])
+  userAnswer    String
+  isPassed      Boolean @default(false)
+  output        Json?
+  executionTime Int     @default(0)
+  collabHash    String
+  collab        Collab  @relation(fields: [collabHash], references: [hash])
 
   userId Int
   user   User @relation(fields: [userId], references: [id])
